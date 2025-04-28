@@ -48,6 +48,11 @@ const userSchema = new mongoose.Schema({
     },
   },
 
+  projects: {
+    type: [mongoose.Schema.ObjectId],
+    ref: "Project",
+  },
+
   changedPasswordAt: {
     type: Date,
   },
@@ -61,6 +66,13 @@ const userSchema = new mongoose.Schema({
   passwordResetToken: String,
 
   passwordResetExpires: Date,
+});
+
+userSchema.index({ email: 1 });
+
+userSchema.index({
+  passwordResetToken: 1,
+  passwordResetExpires: 1,
 });
 
 userSchema.pre("save", async function (next) {
