@@ -11,7 +11,7 @@ const connectDB = async () => {
     const connectionString = process.env.DATABASE.replace(
       "<PASSWORD>",
       process.env.DB_PASSWORD,
-    );
+    ).replace("<USERNAME>", process.env.DB_USERNAME);
     await mongoose.connect(connectionString);
     console.log(`Connection successful`);
   } catch (error) {
@@ -26,5 +26,5 @@ const { PORT, HOST, LOCAL_HOST, NODE_ENV } = process.env;
 const host = NODE_ENV === "production" ? HOST : LOCAL_HOST;
 
 app.listen(PORT, host, () => {
-  console.log(`<app-name> server listening on port: ${PORT}`);
+  console.log(`Plannr server listening on port: ${PORT}`);
 });

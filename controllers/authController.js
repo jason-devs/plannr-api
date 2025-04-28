@@ -89,7 +89,7 @@ export const logout = (req, res, next) => {
   const cookieOptions = {
     expires: new Date(Date.now() + 10 * 1000 * 30),
     httpOnly: true,
-    secure: NODE_ENV === "production"
+    secure: NODE_ENV === "production",
   };
 
   res.cookie("jwt", "loggedout", cookieOptions);
@@ -289,7 +289,7 @@ export const keyProtect = catchAsyncErrors(async (req, res, next) => {
 });
 
 export const generateApiKey = catchAsyncErrors(async (req, res, next) => {
-  const identifier = `enig_${crypto.randomBytes(5).toString("hex")}`;
+  const identifier = `plannr_${crypto.randomBytes(5).toString("hex")}`;
   const string = crypto.randomBytes(32).toString("base64");
 
   const apiKey = await ApiKey.create({

@@ -1,5 +1,5 @@
 {
-  "name": "app_name",
+  "name": "plannr-api",
   "version": "1.0.0",
   "description": "app_description",
   "main": "app.js",
@@ -7,7 +7,7 @@
     "start": "NODE_ENV=development nodemon server.js",
     "prod": "NODE_ENV=production nodemon server.js"
   },
-  "author": "your_name",
+  "author": "Jason Shaw",
   "license": "MIT",
   "type": "module",
   "dependencies": {

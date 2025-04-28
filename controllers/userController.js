@@ -1,11 +1,10 @@
 import AppError from "../utils/appError.js";
 import { catchAsyncErrors } from "../utils/helpers.js";
-import { logout } from "../controllers/authController.js";
 import User from "../models/userModel.js";
 
 export const getMyAccount = catchAsyncErrors(async (req, res, next) => {
   const { _id: id } = req.currentUser;
-  const user = await User.findById(id);
+  const user = await User.findById(id).select("-changedPasswordAt");
 
   res.status(200).json({
     status: "success",
@@ -19,16 +18,22 @@ export const updateMyAccount = catchAsyncErrors(async (req, res, next) => {
   const { _id: id } = req.currentUser;
 
   if (req.body.password || req.body.passwordConfirm) {
-    return next(new AppError(`You cannot update your password at this route. Use the dedicated update password route.`))
+    return next(
+      new AppError(
+        `You cannot update your password at this route. Use the dedicated update password route.`,
+      ),
+    );
   }
 
-  const updatedUser = await User.findByIdAndUpdate(id, req.body, { new: true });
+  const updatedUser = await User.findByIdAndUpdate(id, req.body, {
+    new: true,
+  }).select("-changedPasswordAt");
 
   res.status(200).json({
     status: "success",
     data: {
       updatedUser,
-    }
+    },
   });
 });
 
@@ -41,13 +46,12 @@ export const deleteMyAccount = catchAsyncErrors(async (req, res, next) => {
   const cookieOptions = {
     expires: new Date(Date.now() + 10 * 1000 * 30),
     httpOnly: true,
-    secure: NODE_ENV === "production"
+    secure: NODE_ENV === "production",
   };
 
   res.cookie("jwt", "loggedout", cookieOptions);
 
-  res.status(200).json({
+  res.status(204).json({
     status: "success",
   });
 });
-
