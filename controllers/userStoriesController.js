@@ -5,13 +5,13 @@ import { catchAsyncErrors } from "../utils/helpers.js";
 
 export const createUserStory = catchAsyncErrors(async (req, res, next) => {
   const { story, role } = req.body;
-  const { id } = req.params;
+  const { projectId } = req.params;
 
   const newUserStory = await UserStory.create({
     story,
     role,
     completed: false,
-    project: id,
+    project: projectId,
   });
 
   res.status(201).json({
@@ -23,9 +23,11 @@ export const createUserStory = catchAsyncErrors(async (req, res, next) => {
 });
 
 export const getUserStories = catchAsyncErrors(async (req, res, next) => {
-  const { id } = req.params;
+  const { projectId } = req.params;
 
-  const userStories = await UserStory.find({ project: id });
+  console.log(req.params);
+
+  const userStories = await UserStory.find({ project: projectId });
 
   res.status(200).json({
     status: "success",
@@ -36,9 +38,12 @@ export const getUserStories = catchAsyncErrors(async (req, res, next) => {
 });
 
 export const getUserStory = catchAsyncErrors(async (req, res, next) => {
-  const { userStoryId } = req.params;
+  const { projectId, userStoryId } = req.params;
 
-  const document = await UserStory.findOneById(userStoryId);
+  const document = await UserStory.findOne({
+    _id: userStoryId,
+    project: projectId,
+  });
 
   if (!document) {
     return next(
@@ -55,11 +60,11 @@ export const getUserStory = catchAsyncErrors(async (req, res, next) => {
 });
 
 export const updateUserStory = catchAsyncErrors(async (req, res, next) => {
-  const { userStoryId } = req.params;
+  const { projectId, userStoryId } = req.params;
   const { story, role, completed, position } = req.body;
 
-  const updatedUserStory = await UserStory.findByIdAndUpdate(
-    userStoryId,
+  const updatedUserStory = await UserStory.findOneAndUpdate(
+    { _id: userStoryId, project: projectId },
     { story, role, completed, position },
     { new: true, runValidators: true },
   );
@@ -82,8 +87,11 @@ export const updateUserStory = catchAsyncErrors(async (req, res, next) => {
 });
 
 export const deleteUserStory = catchAsyncErrors(async (req, res, next) => {
-  const { userStoryId } = req.params;
-  const deletedUserStory = await UserStory.findByIdAndDelete(userStoryId);
+  const { projectId, userStoryId } = req.params;
+  const deletedUserStory = await UserStory.findOneAndDelete({
+    _id: userStoryId,
+    project: projectId,
+  });
 
   if (!deletedUserStory) {
     return next(
@@ -101,9 +109,9 @@ export const deleteUserStory = catchAsyncErrors(async (req, res, next) => {
 });
 
 export const deleteUserStories = catchAsyncErrors(async (req, res, next) => {
-  const { id } = req.params;
+  const { projectId } = req.params;
 
-  const deleteCount = await UserStory.deleteMany({ project: id });
+  const deleteCount = await UserStory.deleteMany({ project: projectId });
 
   res.status(200).json({
     status: "success",

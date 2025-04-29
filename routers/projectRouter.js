@@ -12,7 +12,7 @@ router
   .post(projectController.createProject);
 
 router
-  .route("/:id")
+  .route("/:projectId")
   .get(projectController.getProject)
   .patch(projectController.updateProject)
   .delete(projectController.deleteProject);

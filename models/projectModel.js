@@ -1,3 +1,4 @@
+/* eslint-disable import/no-cycle */
 import mongoose from "mongoose";
 import slugify from "slugify";
 import User from "./userModel.js";
