@@ -10,6 +10,7 @@ import cookieParser from "cookie-parser";
 import authRouter from "./routers/authRouter.js";
 import userRouter from "./routers/userRouter.js";
 import projectRouter from "./routers/projectRouter.js";
+import userStoriesRouter from "./routers/userStoriesRouter.js";
 import globalErrorHandler from "./controllers/errorController.js";
 import AppError from "./utils/appError.js";
 
@@ -43,6 +44,9 @@ app.use(express.json());
 app.use(`/api/v1/auth`, authRouter);
 app.use(`/api/v1/user`, userRouter);
 app.use(`/api/v1/project`, projectRouter);
+
+//NOTE: Nested routes:
+projectRouter.use("/:id/user-stories", userStoriesRouter);
 
 app.all("*", (req, res, next) => {
   const error = new AppError(

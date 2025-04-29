@@ -68,8 +68,6 @@ const userSchema = new mongoose.Schema({
   passwordResetExpires: Date,
 });
 
-userSchema.index({ email: 1 });
-
 userSchema.index({
   passwordResetToken: 1,
   passwordResetExpires: 1,

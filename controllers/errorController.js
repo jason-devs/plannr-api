@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import AppError from "../utils/appError.js";
 
 const handleJWTError = function () {
