@@ -12,6 +12,7 @@ import userRouter from "./routers/userRouter.js";
 import projectRouter from "./routers/projectRouter.js";
 import userStoriesRouter from "./routers/userStoriesRouter.js";
 import pageRouter from "./routers/pageRouter.js";
+import backendResourceRouter from "./routers/backendResourceRouter.js";
 import globalErrorHandler from "./controllers/errorController.js";
 import AppError from "./utils/appError.js";
 
@@ -49,6 +50,7 @@ app.use(`/api/v1/project`, projectRouter);
 //NOTE: Nested routes:
 projectRouter.use("/:projectId/user-stories", userStoriesRouter);
 projectRouter.use("/:projectId/page", pageRouter);
+projectRouter.use("/:projectId/backend-resource", backendResourceRouter);
 
 app.all("*", (req, res, next) => {
   const error = new AppError(
