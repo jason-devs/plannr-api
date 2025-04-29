@@ -10,6 +10,7 @@ const userStorySchema = mongoose.Schema({
 
   completed: {
     type: Boolean,
+    default: false,
   },
 
   role: {
