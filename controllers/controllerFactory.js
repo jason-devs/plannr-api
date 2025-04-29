@@ -3,8 +3,7 @@ import AppError from "../utils/appError.js";
 
 export const getAll = Model =>
   catchAsyncErrors(async (req, res, next) => {
-    const { _id: id } = req.currentUser;
-    const docs = await Model.find({ user: id });
+    const docs = await Model.find();
 
     if (!docs) {
       return next(

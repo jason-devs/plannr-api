@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
+import slugify from "slugify";
 import User from "./userModel.js";
+import UserStory from "./userStoriesModel.js";
 
 const projectSchema = new mongoose.Schema({
   name: {
@@ -11,6 +13,24 @@ const projectSchema = new mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: "User",
   },
+
+  userStories: {
+    type: [mongoose.Schema.ObjectId],
+    ref: "UserStory",
+  },
+
+  slug: {
+    type: String,
+  },
+
+  createdAt: {
+    type: Date,
+  },
+});
+
+projectSchema.pre("save", function (next) {
+  this.slug = slugify(this.name, { lower: true });
+  next();
 });
 
 projectSchema.post("save", async project => {
@@ -19,6 +39,15 @@ projectSchema.post("save", async project => {
     { $push: { projects: project._id } },
     { new: true },
   );
+});
+
+projectSchema.post("findOneAndDelete", async project => {
+  await UserStory.deleteMany({
+    _id: { $in: project.userStories },
+  });
+  await User.findByIdAndUpdate(project.user, {
+    $pull: { projects: project._id },
+  });
 });
 
 const Project = mongoose.model("Project", projectSchema);
