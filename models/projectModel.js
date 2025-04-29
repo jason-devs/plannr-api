@@ -20,6 +20,11 @@ const projectSchema = new mongoose.Schema({
     ref: "UserStory",
   },
 
+  pages: {
+    type: [mongoose.Schema.ObjectId],
+    ref: "Page",
+  },
+
   slug: {
     type: String,
   },
