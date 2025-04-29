@@ -40,6 +40,7 @@ userStorySchema.pre("save", async function (next) {
   const userStories = await this.constructor.find({ project: this.project });
   this.position = userStories.length + 1;
   this.slug = `${this.role.toLowerCase()}-${this.position}`;
+  this.createdAt = new Date();
   next();
 });
 
