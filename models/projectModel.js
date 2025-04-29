@@ -25,6 +25,11 @@ const projectSchema = new mongoose.Schema({
     ref: "Page",
   },
 
+  backendResources: {
+    type: [mongoose.Schema.ObjectId],
+    ref: "BackendResource",
+  },
+
   slug: {
     type: String,
   },
