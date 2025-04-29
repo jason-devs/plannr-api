@@ -46,7 +46,7 @@ app.use(`/api/v1/user`, userRouter);
 app.use(`/api/v1/project`, projectRouter);
 
 //NOTE: Nested routes:
-projectRouter.use("/:id/user-stories", userStoriesRouter);
+projectRouter.use("/:projectId/user-stories", userStoriesRouter);
 
 app.all("*", (req, res, next) => {
   const error = new AppError(

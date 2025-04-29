@@ -21,13 +21,13 @@ export const getAll = Model =>
 
 export const deleteOne = Model =>
   catchAsyncErrors(async (req, res, next) => {
-    const { id } = req.params;
-    const deletedDoc = await Model.findByIdAndDelete(id);
+    const { projectId } = req.params;
+    const deletedDoc = await Model.findByIdAndDelete(projectId);
 
     if (!deletedDoc) {
       return next(
         new AppError(
-          `Sorry, couldn't delete because we find any document with that ID: ${id}`,
+          `Sorry, couldn't delete because we find any document with that ID: ${projectId}`,
           404,
         ),
       );
@@ -41,8 +41,8 @@ export const deleteOne = Model =>
 
 export const updateOne = Model =>
   catchAsyncErrors(async (req, res, next) => {
-    const { id } = req.params;
-    const updatedDoc = await Model.findByIdAndUpdate(id, req.body, {
+    const { projectId } = req.params;
+    const updatedDoc = await Model.findByIdAndUpdate(projectId, req.body, {
       new: true,
       runValidators: true,
     });
@@ -50,7 +50,7 @@ export const updateOne = Model =>
     if (!updatedDoc) {
       return next(
         new AppError(
-          `Sorry, couldn't update because we find any document with that ID: ${id}`,
+          `Sorry, couldn't update because we find any document with that ID: ${projectId}`,
           404,
         ),
       );
@@ -66,22 +66,22 @@ export const updateOne = Model =>
 
 export const getOne = (Model, populate) =>
   catchAsyncErrors(async (req, res, next) => {
-    const { id } = req.params;
+    const { projectId } = req.params;
     let doc;
 
     if (populate) {
       const { path } = populate;
-      doc = await Model.findById(id).populate(path);
+      doc = await Model.findById(projectId).populate(path);
     }
 
     if (!populate) {
-      doc = await Model.findById(id);
+      doc = await Model.findById(projectId);
     }
 
     if (!doc) {
       return next(
         new AppError(
-          `Sorry, couldn't find any document with that ID: ${id}`,
+          `Sorry, couldn't find any document with that ID: ${projectId}`,
           404,
         ),
       );
