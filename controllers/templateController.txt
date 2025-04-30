@@ -1,0 +1,41 @@
+import %%MODELNAME%% from "../models/%%VARIABLENAME%%Model.js";
+import * as factory from "./controllerFactory.js";
+
+export const create%%MODELNAME%% = factory.createOne(
+  %%MODELNAME%%,
+  "%%PARENTVARIABLENAME%%",
+  "%%PARENTVARIABLENAME%%Id",
+);
+
+export const get%%MODELNAME%%s = factory.getAll(
+  %%MODELNAME%%,
+  "%%PARENTVARIABLENAME%%",
+  "%%PARENTVARIABLENAME%%Id",
+);
+
+export const get%%MODELNAME%% = factory.getOne(
+  %%MODELNAME%%,
+  "backendResourceId",
+  "%%PARENTVARIABLENAME%%",
+  "%%PARENTVARIABLENAME%%Id",
+);
+
+export const update%%MODELNAME%% = factory.updateOne(
+  %%MODELNAME%%,
+  "%%VARIABLENAME%%Id",
+  "%%PARENTVARIABLENAME%%",
+  "%%PARENTVARIABLENAME%%Id",
+);
+
+export const delete%%MODELNAME%% = factory.deleteOne(
+  %%MODELNAME%%,
+  "%%VARIABLENAME%%Id",
+  "%%PARENTVARIABLENAME%%",
+  "%%PARENTVARIABLENAME%%Id",
+);
+
+export const delete%%MODELNAME%%s = factory.deleteAll(
+  %%MODELNAME%%,
+  "%%PARENTVARIABLENAME%%",
+  "%%PARENTVARIABLENAME%%Id",
+);
