@@ -1,0 +1,27 @@
+import express from "express";
+import * as %%VARIABLENAME%%Controller from "../controllers/%%VARIABLENAME%%Controller.js";
+
+const router = express.Router({ mergeParams: true });
+
+router
+  .route("/")
+  .post(%%VARIABLENAME%%Controller.create%%MODELNAME%%)
+  .get(%%VARIABLENAME%%Controller.get%%MODELNAME%%s)
+  .delete(%%VARIABLENAME%%Controller.delete%%MODELNAME%%s);
+
+router
+  .route("/:%%VARIABLENAME%%Id")
+  .get(%%VARIABLENAME%%Controller.get%%MODELNAME%%)
+  .patch(%%VARIABLENAME%%Controller.update%%MODELNAME%%)
+  .delete(%%VARIABLENAME%%Controller.delete%%MODELNAME%%);
+
+export default router;
+
+/*
+
+NOTE: Add these to app.js:
+
+import %%VARIABLENAME%%Router from "./routers/%%VARIABLENAME%%Router.js";
+projectRouter.use("/:%%PARENTVARIABLENAME%%Id/%%RESOURCENAME%%", %%VARIABLENAME%%Router);
+
+*/

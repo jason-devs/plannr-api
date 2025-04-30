@@ -1,0 +1,81 @@
+import mongoose from "mongoose";
+import slugify from "slugify";
+import %%PARENTMODELNAME%% from "./%%PARENTVARIABLENAME%%Model.js";
+import * as factory from "./validatorFactory.js";
+
+const %%VARIABLENAME%%Schema = mongoose.Schema({
+  name: {
+    type: String,
+  },
+
+  %%PARENTVARIABLENAME%%: {
+    type: mongoose.Schema.ObjectId,
+    ref: "%%PARENTMODELNAME%%",
+    validate: {
+      validator: id => factory.validReference(%%PARENTMODELNAME%%, id),
+      message: props =>
+        factory.validReferenceMessage("%%MODELNAMESPACE%%", props),
+    },
+  },
+
+  createdAt: {
+    type: Date,
+  },
+});
+
+%%VARIABLENAME%%Schema.pre("save", async function (next) {
+  this.slug = slugify(this.name, { lower: true });
+  this.createdAt = new Date();
+  next();
+});
+
+%%VARIABLENAME%%Schema.post("findOneAndDelete", async %%VARIABLENAME%% => {
+  await %%PARENTMODELNAME%%.findByIdAndUpdate(%%VARIABLENAME%%.%%PARENTVARIABLENAME%%, {
+    $pull: { %%VARIABLENAME%%s: %%VARIABLENAME%%._id },
+  });
+});
+
+%%VARIABLENAME%%Schema.post("deleteMany", async function () {
+  await %%PARENTMODELNAME%%.findByIdAndUpdate(
+    this.getQuery().%%PARENTVARIABLENAME%%,
+    { %%VARIABLENAME%%s: [] },
+    { new: true },
+  );
+});
+
+%%VARIABLENAME%%Schema.post("save", async %%VARIABLENAME%% => {
+  await %%PARENTMODELNAME%%.findByIdAndUpdate(
+    %%VARIABLENAME%%.%%PARENTVARIABLENAME%%,
+    { $push: { %%VARIABLENAME%%s: %%VARIABLENAME%%._id } },
+    { new: true },
+  );
+});
+
+const %%MODELNAME%% = mongoose.model(
+  "%%MODELNAME%%",
+  %%VARIABLENAME%%Schema,
+);
+
+export default %%MODELNAME%%;
+
+/*
+
+NOTE: Add the following to %%PARENTMODELNAME%%:
+
+  %%VARIABLENAME%%s: {
+    type: [mongoose.Schema.ObjectId],
+    ref: "%%MODELNAME%%",
+    validate: {
+      validator: id => factory.validReference(%%MODELNAME%%, id),
+      message: props =>
+        factory.validReferenceMessage("%%MODELNAMESPACE%%", props),
+    },
+  },
+
+NOTE: Along with:
+
+  await %%MODELNAME%%.deleteMany({
+    _id: { $in: %%PARENTVARIABLENAME%%.%%VARIABLENAME%%s },
+  });
+
+*/
