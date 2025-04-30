@@ -1,10 +1,8 @@
 import BackendResource from "../models/backendResourceModel.js";
-import Project from "../models/projectModel.js";
 import * as factory from "./controllerFactory.js";
 
 export const createBackendResource = factory.createOne(
   BackendResource,
-  Project,
   "project",
   "projectId",
 );

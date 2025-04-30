@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import slugify from "slugify";
 import Project from "./projectModel.js";
+import * as factory from "./validatorFactory.js";
 
 const backendResourceSchema = mongoose.Schema({
   name: {
@@ -10,6 +11,11 @@ const backendResourceSchema = mongoose.Schema({
   project: {
     type: mongoose.Schema.ObjectId,
     ref: "Project",
+    validate: {
+      validator: id => factory.validReference(Project, id),
+      message: props =>
+        factory.validReferenceMessage("Backend Resource", props),
+    },
   },
 
   createdAt: {
