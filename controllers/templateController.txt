@@ -15,7 +15,7 @@ export const get%%MODELNAME%%s = factory.getAll(
 
 export const get%%MODELNAME%% = factory.getOne(
   %%MODELNAME%%,
-  "backendResourceId",
+  "%%VARIABLENAME%%Id",
   "%%PARENTVARIABLENAME%%",
   "%%PARENTVARIABLENAME%%Id",
 );
