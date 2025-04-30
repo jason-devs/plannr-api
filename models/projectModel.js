@@ -4,6 +4,9 @@ import slugify from "slugify";
 import User from "./userModel.js";
 import UserStory from "./userStoriesModel.js";
 import * as factory from "./validatorFactory.js";
+import Page from "./pageModel.js";
+import BackendResource from "./backendResourceModel.js";
+import TechStack from "./techStackModel.js";
 
 const projectSchema = new mongoose.Schema({
   name: {
@@ -35,6 +38,11 @@ const projectSchema = new mongoose.Schema({
     ref: "BackendResource",
   },
 
+  techStack: {
+    type: mongoose.Schema.ObjectId,
+    ref: "TechStack",
+  },
+
   slug: {
     type: String,
   },
@@ -58,6 +66,13 @@ projectSchema.post("save", async project => {
 });
 
 projectSchema.post("findOneAndDelete", async project => {
+  if (project.techStack) await TechStack.findByIdAndDelete(project.techStack);
+  await BackendResource.deleteMany({
+    _id: { $in: project.backendResources },
+  });
+  await Page.deleteMany({
+    _id: { $in: project.pages },
+  });
   await UserStory.deleteMany({
     _id: { $in: project.userStories },
   });
