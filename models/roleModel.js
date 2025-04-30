@@ -1,20 +1,18 @@
+/* eslint-disable import/no-cycle */
 import mongoose from "mongoose";
 import slugify from "slugify";
 import Project from "./projectModel.js";
-import * as factory from "./validatorFactory.js";
 
 const roleSchema = mongoose.Schema({
   name: {
     type: String,
+    required: [true, "We cannot create a new role without a name."],
+    unique: true,
   },
 
   project: {
     type: mongoose.Schema.ObjectId,
     ref: "Project",
-    validate: {
-      validator: id => factory.validReference(Project, id),
-      message: props => factory.validReferenceMessage("Role", props),
-    },
   },
 
   createdAt: {
