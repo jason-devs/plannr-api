@@ -49,7 +49,7 @@ const projectSchema = new mongoose.Schema({
     ref: "Role",
     validate: {
       validator: id => factory.validReference(Role, id),
-      message: props => factory.validReferenceMessage("Role", props),
+      message: props => factory.validReferenceMessage("Project", props),
     },
   },
 
@@ -61,6 +61,12 @@ const projectSchema = new mongoose.Schema({
     type: Date,
   },
 });
+
+projectSchema.methods.cleanupRoles = async function (roleId) {
+  // if (this.roles.includes(roleId) || roleId === undefined) return;
+  this.roles.push(roleId);
+  // await this.save({ validateBeforeSave: true });
+};
 
 projectSchema.pre("save", function (next) {
   this.slug = slugify(this.name, { lower: true });
