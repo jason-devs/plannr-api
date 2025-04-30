@@ -1,7 +1,7 @@
 import { catchAsyncErrors } from "../utils/helpers.js";
 import AppError from "../utils/appError.js";
 
-export const createOne = (Model, ParentModel, parentProperty, paramName) =>
+export const createOne = (Model, parentProperty, paramName) =>
   catchAsyncErrors(async (req, res, next) => {
     const { _id: id } = req.currentUser;
 
@@ -16,16 +16,6 @@ export const createOne = (Model, ParentModel, parentProperty, paramName) =>
     let parent = { user: id };
 
     if (parentProperty) {
-      const validParent = await ParentModel.findById(req.params[paramName]);
-
-      if (!validParent) {
-        return next(
-          new AppError(
-            "Cannot create this document without a valid parent ID.",
-          ),
-        );
-      }
-
       parent = { [parentProperty]: req.params[paramName] };
     }
 

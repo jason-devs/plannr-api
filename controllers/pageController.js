@@ -1,13 +1,7 @@
 import Page from "../models/pageModel.js";
-import Project from "../models/projectModel.js";
 import * as factory from "./controllerFactory.js";
 
-export const createPage = factory.createOne(
-  Page,
-  Project,
-  "project",
-  "projectId",
-);
+export const createPage = factory.createOne(Page, "project", "projectId");
 
 export const getPages = factory.getAll(Page, "project", "projectId");
 

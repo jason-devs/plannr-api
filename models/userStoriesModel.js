@@ -1,6 +1,7 @@
 /* eslint-disable import/no-cycle */
 import mongoose from "mongoose";
 import Project from "./projectModel.js";
+import * as factory from "./validatorFactory.js";
 
 const userStorySchema = mongoose.Schema({
   story: {
@@ -25,6 +26,10 @@ const userStorySchema = mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: "Project",
     required: [true, "Your user story needs a project!"],
+    validate: {
+      validator: id => factory.validReference(Project, id),
+      message: props => factory.validReferenceMessage("User Story", props),
+    },
   },
 
   slug: {

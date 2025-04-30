@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import slugify from "slugify";
 import User from "./userModel.js";
 import UserStory from "./userStoriesModel.js";
+import * as factory from "./validatorFactory.js";
 
 const projectSchema = new mongoose.Schema({
   name: {
@@ -13,6 +14,10 @@ const projectSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.ObjectId,
     ref: "User",
+    validate: {
+      validator: id => factory.validReference(User, id),
+      message: props => factory.validReferenceMessage("Project", props),
+    },
   },
 
   userStories: {

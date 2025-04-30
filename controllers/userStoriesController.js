@@ -1,10 +1,8 @@
-import Project from "../models/projectModel.js";
 import UserStory from "../models/userStoriesModel.js";
 import * as factory from "./controllerFactory.js";
 
 export const createUserStory = factory.createOne(
   UserStory,
-  Project,
   "project",
   "projectId",
 );
