@@ -62,6 +62,8 @@ export default %%MODELNAME%%;
 
 NOTE: Add the following to %%PARENTMODELNAME%%:
 
+  import %%MODELNAME%% from "./%%VARIABLENAME%%Model.js"
+  
   %%VARIABLENAME%%s: {
     type: [mongoose.Schema.ObjectId],
     ref: "%%MODELNAME%%",

@@ -7,6 +7,7 @@ import * as factory from "./validatorFactory.js";
 import Page from "./pageModel.js";
 import BackendResource from "./backendResourceModel.js";
 import TechStack from "./techStackModel.js";
+import Role from "./roleModel.js";
 
 const projectSchema = new mongoose.Schema({
   name: {
@@ -43,6 +44,15 @@ const projectSchema = new mongoose.Schema({
     ref: "TechStack",
   },
 
+  roles: {
+    type: [mongoose.Schema.ObjectId],
+    ref: "Role",
+    validate: {
+      validator: id => factory.validReference(Role, id),
+      message: props => factory.validReferenceMessage("Role", props),
+    },
+  },
+
   slug: {
     type: String,
   },
@@ -67,6 +77,9 @@ projectSchema.post("save", async project => {
 
 projectSchema.post("findOneAndDelete", async project => {
   if (project.techStack) await TechStack.findByIdAndDelete(project.techStack);
+  await Role.deleteMany({
+    _id: { $in: project.roles },
+  });
   await BackendResource.deleteMany({
     _id: { $in: project.backendResources },
   });
