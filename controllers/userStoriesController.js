@@ -1,37 +1,26 @@
-import UserStory from "../models/userStoriesModel.js";
 import * as factory from "./controllerFactory.js";
+import models from "../models/modelRegistry.js";
 
-export const createUserStory = factory.createOne(
-  UserStory,
-  "project",
-  "projectId",
-);
+export const createUserStory = factory.createOne(models.UserStory, "project");
 
-export const getUserStories = factory.getAll(UserStory, "project", "projectId");
+export const getUserStories = factory.getAll(models.UserStory, "project");
 
 export const getUserStory = factory.getOne(
-  UserStory,
-  "userStoryId",
+  models.UserStory,
+  "user story",
   "project",
-  "projectId",
 );
 
 export const updateUserStory = factory.updateOne(
-  UserStory,
-  "userStoryId",
+  models.UserStory,
+  "user story",
   "project",
-  "projectId",
 );
 
 export const deleteUserStory = factory.deleteOne(
-  UserStory,
-  "userStoryId",
+  models.UserStory,
+  "user story",
   "project",
-  "projectId",
 );
 
-export const deleteUserStories = factory.deleteAll(
-  UserStory,
-  "project",
-  "projectId",
-);
+export const deleteUserStories = factory.deleteAll(models.UserStory, "project");

@@ -1,24 +1,14 @@
-import Role from "../models/roleModel.js";
 import * as factory from "./controllerFactory.js";
+import models from "../models/modelRegistry.js";
 
-export const createRole = factory.createOne(Role, "project", "projectId");
+export const createRole = factory.createOne(models.Role, "project");
 
-export const getRoles = factory.getAll(Role, "project", "projectId");
+export const getRoles = factory.getAll(models.Role, "project");
 
-export const getRole = factory.getOne(Role, "roleId", "project", "projectId");
+export const getRole = factory.getOne(models.Role, "role", "project");
 
-export const updateRole = factory.updateOne(
-  Role,
-  "roleId",
-  "project",
-  "projectId",
-);
+export const updateRole = factory.updateOne(models.Role, "role", "project");
 
-export const deleteRole = factory.deleteOne(
-  Role,
-  "roleId",
-  "project",
-  "projectId",
-);
+export const deleteRole = factory.deleteOne(models.Role, "role", "project");
 
-export const deleteRoles = factory.deleteAll(Role, "project", "projectId");
+export const deleteRoles = factory.deleteAll(models.Role, "project");

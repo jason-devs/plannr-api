@@ -1,41 +1,35 @@
-import BackendResource from "../models/backendResourceModel.js";
 import * as factory from "./controllerFactory.js";
+import models from "../models/modelRegistry.js";
 
 export const createBackendResource = factory.createOne(
-  BackendResource,
+  models.BackendResource,
   "project",
-  "projectId",
 );
 
 export const getBackendResources = factory.getAll(
-  BackendResource,
+  models.BackendResource,
   "project",
-  "projectId",
 );
 
 export const getBackendResource = factory.getOne(
-  BackendResource,
-  "backendResourceId",
+  models.BackendResource,
+  "backend resource",
   "project",
-  "projectId",
 );
 
 export const updateBackendResource = factory.updateOne(
-  BackendResource,
-  "backendResourceId",
+  models.BackendResource,
+  "backend resource",
   "project",
-  "projectId",
 );
 
 export const deleteBackendResource = factory.deleteOne(
-  BackendResource,
-  "backendResourceId",
+  models.BackendResource,
+  "backend resource",
   "project",
-  "projectId",
 );
 
 export const deleteBackendResources = factory.deleteAll(
-  BackendResource,
+  models.BackendResource,
   "project",
-  "projectId",
 );

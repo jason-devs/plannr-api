@@ -1,11 +1,10 @@
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import { promisify } from "util";
-import User from "../models/userModel.js";
-import ApiKey from "../models/apiKeyModel.js";
 import AppError from "../utils/appError.js";
 import { catchAsyncErrors } from "../utils/helpers.js";
 import sendEmail from "../utils/email.js";
+import models from "../models/modelRegistry.js";
 
 export const restrict =
   (...roles) =>
@@ -64,7 +63,7 @@ export const login = catchAsyncErrors(async (req, res, next) => {
     );
   }
 
-  const user = await User.findOne({ email }).select("+password");
+  const user = await models.User.findOne({ email }).select("+password");
 
   if (!user || !(await user.checkPassword(password, user.password))) {
     return next(
@@ -101,7 +100,7 @@ export const logout = (req, res, next) => {
 
 export const signup = catchAsyncErrors(async (req, res, next) => {
   const { name, email, password, passwordConfirm } = req.body;
-  const user = await User.create({
+  const user = await models.User.create({
     name,
     email,
     password,
@@ -111,14 +110,14 @@ export const signup = catchAsyncErrors(async (req, res, next) => {
   const { _id: id } = user;
 
   const token = signJWT(id);
-  const newUser = await User.findById(id).select("-password -role");
+  const newUser = await models.User.findById(id).select("-password -role");
 
   sendJWT(newUser, token, res);
 });
 
 export const forgotPassword = catchAsyncErrors(async (req, res, next) => {
   const { email } = req.body;
-  const user = await User.findOne({ email });
+  const user = await models.User.findOne({ email });
 
   if (!user) {
     return next(
@@ -167,7 +166,7 @@ export const resetPassword = catchAsyncErrors(async (req, res, next) => {
     .update(resetToken)
     .digest("hex");
 
-  const user = await User.findOne({
+  const user = await models.User.findOne({
     passwordResetToken: comparisonToken,
     passwordResetExpires: { $gt: Date.now() },
   });
@@ -196,7 +195,7 @@ export const resetPassword = catchAsyncErrors(async (req, res, next) => {
 
 export const updatePassword = catchAsyncErrors(async (req, res, next) => {
   const { _id: id } = req.currentUser;
-  const user = await User.findById(id).select("+password");
+  const user = await models.User.findById(id).select("+password");
 
   const { oldPassword, password, passwordConfirm } = req.body;
 
@@ -242,7 +241,7 @@ export const userProtect = catchAsyncErrors(async (req, res, next) => {
 
   const decoded = await promisify(jwt.verify)(token, JWT_SECRET);
   const { id, iat } = decoded;
-  const user = await User.findById(id);
+  const user = await models.User.findById(id);
 
   if (!user) {
     return next(
@@ -274,7 +273,7 @@ export const keyProtect = catchAsyncErrors(async (req, res, next) => {
 
   const identifier = key.slice(0, 15);
 
-  const apiKey = await ApiKey.findOne({ identifier });
+  const apiKey = await models.ApiKey.findOne({ identifier });
 
   if (!apiKey || !(await apiKey.checkApiKey(key.slice(15), apiKey.key))) {
     return next(
@@ -292,7 +291,7 @@ export const generateApiKey = catchAsyncErrors(async (req, res, next) => {
   const identifier = `plannr_${crypto.randomBytes(5).toString("hex")}`;
   const string = crypto.randomBytes(32).toString("base64");
 
-  const apiKey = await ApiKey.create({
+  const apiKey = await models.ApiKey.create({
     identifier,
     key: string,
   });

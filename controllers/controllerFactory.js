@@ -1,7 +1,7 @@
-import { catchAsyncErrors } from "../utils/helpers.js";
+import { catchAsyncErrors, convertCase } from "../utils/helpers.js";
 import AppError from "../utils/appError.js";
 
-export const createOne = (Model, parentProperty, paramName) =>
+export const createOne = (Model, parentName) =>
   catchAsyncErrors(async (req, res, next) => {
     const { _id: id } = req.currentUser;
 
@@ -15,8 +15,11 @@ export const createOne = (Model, parentProperty, paramName) =>
 
     let parent = { user: id };
 
-    if (parentProperty) {
-      parent = { [parentProperty]: req.params[paramName] };
+    if (parentName) {
+      parent = {
+        [convertCase(parentName, "camel")]:
+          req.params[`${convertCase(parentName, "camel")}Id`],
+      };
     }
 
     const newDoc = await Model.create({ ...req.body, ...parent });
@@ -29,11 +32,14 @@ export const createOne = (Model, parentProperty, paramName) =>
     });
   });
 
-export const getAll = (Model, parentProperty, paramName) =>
+export const getAll = (Model, parentName) =>
   catchAsyncErrors(async (req, res, next) => {
     let query = {};
-    if (parentProperty) {
-      query = { [parentProperty]: req.params[paramName] };
+    if (parentName) {
+      query = {
+        [convertCase(parentName, "camel")]:
+          req.params[`${convertCase(parentName, "camel")}Id`],
+      };
     }
 
     const docs = await Model.find(query);
@@ -52,11 +58,15 @@ export const getAll = (Model, parentProperty, paramName) =>
     });
   });
 
-export const getOne = (Model, id, parentProperty, paramName) =>
+export const getOne = (Model, childName, parentName) =>
   catchAsyncErrors(async (req, res, next) => {
-    let query = { _id: req.params[id] };
-    if (parentProperty) {
-      query = { _id: req.params[id], [parentProperty]: req.params[paramName] };
+    let query = { _id: req.params[`${convertCase(childName, "camel")}Id`] };
+    if (parentName) {
+      query = {
+        _id: req.params[`${convertCase(childName, "camel")}Id`],
+        [convertCase(parentName, "camel")]:
+          req.params[`${convertCase(parentName, "camel")}Id`],
+      };
     }
 
     const doc = await Model.findOne(query);
@@ -64,7 +74,7 @@ export const getOne = (Model, id, parentProperty, paramName) =>
     if (!doc) {
       return next(
         new AppError(
-          `Sorry, couldn't find any document with that ID: ${req.params[id]}`,
+          `Sorry, couldn't find any document with that ID: ${req.params[`${convertCase(childName, "camel")}Id`]}`,
           404,
         ),
       );
@@ -78,11 +88,15 @@ export const getOne = (Model, id, parentProperty, paramName) =>
     });
   });
 
-export const updateOne = (Model, id, parentProperty, paramName) =>
+export const updateOne = (Model, childName, parentName) =>
   catchAsyncErrors(async (req, res, next) => {
-    let query = { _id: req.params[id] };
-    if (parentProperty) {
-      query = { _id: req.params[id], [parentProperty]: req.params[paramName] };
+    let query = { _id: req.params[`${convertCase(childName, "camel")}Id`] };
+    if (parentName) {
+      query = {
+        _id: req.params[`${convertCase(childName, "camel")}Id`],
+        [convertCase(parentName, "camel")]:
+          req.params[`${convertCase(parentName, "camel")}Id`],
+      };
     }
 
     const updatedDoc = await Model.findOneAndUpdate(query, req.body, {
@@ -93,7 +107,7 @@ export const updateOne = (Model, id, parentProperty, paramName) =>
     if (!updatedDoc) {
       return next(
         new AppError(
-          `Sorry, couldn't update because we find any document with that ID: ${req.params[id]}`,
+          `Sorry, couldn't update because we find any document with that ID: ${req.params[`${convertCase(childName, "camel")}Id`]}`,
           404,
         ),
       );
@@ -107,11 +121,15 @@ export const updateOne = (Model, id, parentProperty, paramName) =>
     });
   });
 
-export const deleteOne = (Model, id, parentProperty, paramName) =>
+export const deleteOne = (Model, childName, parentName) =>
   catchAsyncErrors(async (req, res, next) => {
-    let query = { _id: req.params[id] };
-    if (parentProperty) {
-      query = { _id: req.params[id], [parentProperty]: req.params[paramName] };
+    let query = { _id: req.params[`${convertCase(childName, "camel")}Id`] };
+    if (parentName) {
+      query = {
+        _id: req.params[`${convertCase(childName, "camel")}Id`],
+        [convertCase(parentName, "camel")]:
+          req.params[`${convertCase(parentName, "camel")}Id`],
+      };
     }
 
     const deletedDoc = await Model.findOneAndDelete(query);
@@ -119,7 +137,7 @@ export const deleteOne = (Model, id, parentProperty, paramName) =>
     if (!deletedDoc) {
       return next(
         new AppError(
-          `Sorry, couldn't delete because we find any document with that ID: ${id}`,
+          `Sorry, couldn't delete because we find any document with that ID: ${childName}`,
           404,
         ),
       );
@@ -131,12 +149,15 @@ export const deleteOne = (Model, id, parentProperty, paramName) =>
     });
   });
 
-export const deleteAll = (Model, parentProperty, paramName) =>
+export const deleteAll = (Model, parentName) =>
   catchAsyncErrors(async (req, res, next) => {
     const { _id: id } = req.currentUser;
     let query = { user: id };
-    if (parentProperty) {
-      query = { [parentProperty]: req.params[paramName] };
+    if (parentName) {
+      query = {
+        [convertCase(parentName, "camel")]:
+          req.params[`${convertCase(parentName, "camel")}Id`],
+      };
     }
 
     const deleteCount = await Model.deleteMany(query);

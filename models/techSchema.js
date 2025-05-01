@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import slugify from "slugify";
-import TechStack from "./techStackModel.js";
 import * as factory from "./validatorFactory.js";
+import * as relationships from "./relationships.js";
 
 const techSchema = mongoose.Schema({
   name: {
@@ -12,7 +12,7 @@ const techSchema = mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: "TechStack",
     validate: {
-      validator: id => factory.validReference(TechStack, id),
+      validator: id => factory.validReference(mongoose.model("TechStack"), id),
       message: props => factory.validReferenceMessage("Tech", props),
     },
   },
@@ -28,28 +28,16 @@ techSchema.pre("save", async function (next) {
   next();
 });
 
-techSchema.post("findOneAndDelete", async tech => {
-  await TechStack.findByIdAndUpdate(tech.techStack, {
-    $pull: { techs: tech._id },
-  });
+techSchema.post("findOneAndDelete", async function (tech) {
+  await relationships.afterDeleteOne(tech, "tech stack", "tech");
 });
 
 techSchema.post("deleteMany", async function () {
-  await TechStack.findByIdAndUpdate(
-    this.getQuery().techStack,
-    { techs: [] },
-    { new: true },
-  );
+  await relationships.afterDeleteMany("tech stack", "tech", this);
 });
 
-techSchema.post("save", async tech => {
-  await TechStack.findByIdAndUpdate(
-    tech.techStack,
-    { $push: { techs: tech._id } },
-    { new: true },
-  );
+techSchema.post("save", async function (tech) {
+  await relationships.afterAddOne(tech, "tech stack", "tech");
 });
 
-const Tech = mongoose.model("Tech", techSchema);
-
-export default Tech;
+export default techSchema;

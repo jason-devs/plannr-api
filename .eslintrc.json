@@ -12,6 +12,7 @@
     "node": true
   },
   "rules": {
+    "prefer-arrow-callback": "off",
     "prettier/prettier": "error",
     "spaced-comment": "off",
     "no-console": "warn",

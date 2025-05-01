@@ -1,37 +1,26 @@
-import TechStack from "../models/techStackModel.js";
 import * as factory from "./controllerFactory.js";
+import models from "../models/modelRegistry.js";
 
-export const createTechStack = factory.createOne(
-  TechStack,
-  "project",
-  "projectId",
-);
+export const createTechStack = factory.createOne(models.TechStack, "project");
 
-export const getTechStacks = factory.getAll(TechStack, "project", "projectId");
+export const getTechStacks = factory.getAll(models.TechStack, "project");
 
 export const getTechStack = factory.getOne(
-  TechStack,
-  "techStackId",
+  models.TechStack,
+  "tech stack",
   "project",
-  "projectId",
 );
 
 export const updateTechStack = factory.updateOne(
-  TechStack,
-  "techStackId",
+  models.TechStack,
+  "tech stack",
   "project",
-  "projectId",
 );
 
 export const deleteTechStack = factory.deleteOne(
-  TechStack,
-  "techStackId",
+  models.TechStack,
+  "tech stack",
   "project",
-  "projectId",
 );
 
-export const deleteTechStacks = factory.deleteAll(
-  TechStack,
-  "project",
-  "projectId",
-);
+export const deleteTechStacks = factory.deleteAll(models.TechStack, "project");
