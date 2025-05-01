@@ -1,41 +1,35 @@
-import %%MODELNAME%% from "../models/%%VARIABLENAME%%Model.js";
 import * as factory from "./controllerFactory.js";
+import models from "../models/modelRegistry.js";
 
 export const create%%MODELNAME%% = factory.createOne(
-  %%MODELNAME%%,
-  "%%PARENTVARIABLENAME%%",
-  "%%PARENTVARIABLENAME%%Id",
+  models.%%MODELNAME%%,
+  "%%PARENTNAME%%",
 );
 
 export const get%%MODELNAME%%s = factory.getAll(
-  %%MODELNAME%%,
-  "%%PARENTVARIABLENAME%%",
-  "%%PARENTVARIABLENAME%%Id",
+  models.%%MODELNAME%%,
+  "%%PARENTNAME%%",
 );
 
 export const get%%MODELNAME%% = factory.getOne(
-  %%MODELNAME%%,
-  "%%VARIABLENAME%%Id",
-  "%%PARENTVARIABLENAME%%",
-  "%%PARENTVARIABLENAME%%Id",
+  models.%%MODELNAME%%,
+  "%%NAME%%",
+  "%%PARENTNAME%%",
 );
 
 export const update%%MODELNAME%% = factory.updateOne(
-  %%MODELNAME%%,
-  "%%VARIABLENAME%%Id",
-  "%%PARENTVARIABLENAME%%",
-  "%%PARENTVARIABLENAME%%Id",
+  models.%%MODELNAME%%,
+  "%%NAME%%",
+  "%%PARENTNAME%%",
 );
 
 export const delete%%MODELNAME%% = factory.deleteOne(
-  %%MODELNAME%%,
-  "%%VARIABLENAME%%Id",
-  "%%PARENTVARIABLENAME%%",
-  "%%PARENTVARIABLENAME%%Id",
+  models.%%MODELNAME%%,
+  "%%NAME%%",
+  "%%PARENTNAME%%",
 );
 
 export const delete%%MODELNAME%%s = factory.deleteAll(
-  %%MODELNAME%%,
-  "%%PARENTVARIABLENAME%%",
-  "%%PARENTVARIABLENAME%%Id",
+  models.%%MODELNAME%%,
+  "%%PARENTNAME%%",
 );
