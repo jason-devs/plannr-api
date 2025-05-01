@@ -1,9 +1,6 @@
-/* eslint-disable import/no-cycle */
 import mongoose from "mongoose";
 import validator from "validator";
-import Project from "./projectModel.js";
 import * as factory from "./validatorFactory.js";
-import Role from "./roleModel.js";
 
 const userStorySchema = mongoose.Schema({
   story: {
@@ -52,7 +49,7 @@ const userStorySchema = mongoose.Schema({
     ref: "Project",
     required: [true, "Your user story needs a project!"],
     validate: {
-      validator: id => factory.validReference(Project, id),
+      validator: id => factory.validReference(mongoose.model("Project"), id),
       message: props => factory.validReferenceMessage("User Story", props),
     },
   },
@@ -72,9 +69,9 @@ const userStorySchema = mongoose.Schema({
 
 userStorySchema.pre("save", async function (next) {
   const userStories = await this.constructor.find({ project: this.project });
-  const role = await Role.findById(this.role);
-  this.story = this.story.replace("%%ROLE%%", role.name);
   this.position = userStories.length + 1;
+  const role = await mongoose.model("Role").findById(this.role);
+  this.story = this.story.replace("%%ROLE%%", role.name);
   this.createdAt = new Date();
   this.slug = `user-story-${this._id.toString().slice(-5).toUpperCase()}${String(Date.now()).slice(-3)}`;
   next();
@@ -88,23 +85,21 @@ userStorySchema.post("findOneAndDelete", async userStory => {
       $pull: { userStories: userStory._id, roles: userStory.role },
     };
   }
-  await Project.findByIdAndUpdate(userStory.project, query);
+  await mongoose.model("Project").findByIdAndUpdate(userStory.project, query);
 });
 
 userStorySchema.post("deleteMany", async function () {
-  await Project.findByIdAndUpdate(this.getQuery().project, {
+  await mongoose.model("Project").findByIdAndUpdate(this.getQuery().project, {
     userStories: [],
     roles: [],
   });
 });
 
 userStorySchema.post("save", async userStory => {
-  await Project.findByIdAndUpdate(userStory.project, {
-    $push: { userStories: userStory._id },
-    $addToSet: { roles: userStory.role },
+  await mongoose.model("Project").findByIdAndUpdate(userStory.project, {
+    $push: { userStoryList: userStory._id },
+    $addToSet: { roleList: userStory.role },
   });
 });
 
-const UserStory = mongoose.model("UserStory", userStorySchema);
-
-export default UserStory;
+export default userStorySchema;

@@ -48,7 +48,7 @@ const userSchema = new mongoose.Schema({
     },
   },
 
-  projects: {
+  projectList: {
     type: [mongoose.Schema.ObjectId],
     ref: "Project",
   },
@@ -116,6 +116,4 @@ userSchema.methods.generateResetPasswordToken = function () {
   return resetToken;
 };
 
-const User = mongoose.model("User", userSchema);
-
-export default User;
+export default userSchema;

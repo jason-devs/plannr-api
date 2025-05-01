@@ -22,6 +22,4 @@ apiKeySchema.methods.checkApiKey = async function (candidate, saved) {
   return await bcrypt.compare(candidate, saved);
 };
 
-const ApiKey = mongoose.model("ApiKey", apiKeySchema);
-
-export default ApiKey;
+export default apiKeySchema;

@@ -1,10 +1,10 @@
 import AppError from "../utils/appError.js";
 import { catchAsyncErrors } from "../utils/helpers.js";
-import User from "../models/userModel.js";
+import models from "../models/modelRegistry.js";
 
 export const getMyAccount = catchAsyncErrors(async (req, res, next) => {
   const { _id: id } = req.currentUser;
-  const user = await User.findById(id).select("-changedPasswordAt");
+  const user = await models.User.findById(id).select("-changedPasswordAt");
 
   res.status(200).json({
     status: "success",
@@ -25,7 +25,7 @@ export const updateMyAccount = catchAsyncErrors(async (req, res, next) => {
     );
   }
 
-  const updatedUser = await User.findByIdAndUpdate(id, req.body, {
+  const updatedUser = await models.User.findByIdAndUpdate(id, req.body, {
     new: true,
   }).select("-changedPasswordAt");
 
@@ -41,7 +41,7 @@ export const deleteMyAccount = catchAsyncErrors(async (req, res, next) => {
   const { NODE_ENV } = process.env;
   const { _id: id } = req.currentUser;
 
-  await User.findByIdAndUpdate(id, { active: false });
+  await models.User.findByIdAndUpdate(id, { active: false });
 
   const cookieOptions = {
     expires: new Date(Date.now() + 10 * 1000 * 30),

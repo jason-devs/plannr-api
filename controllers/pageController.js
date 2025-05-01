@@ -1,24 +1,14 @@
-import Page from "../models/pageModel.js";
 import * as factory from "./controllerFactory.js";
+import models from "../models/modelRegistry.js";
 
-export const createPage = factory.createOne(Page, "project", "projectId");
+export const createPage = factory.createOne(models.Page, "project");
 
-export const getPages = factory.getAll(Page, "project", "projectId");
+export const getPages = factory.getAll(models.Page, "project");
 
-export const getPage = factory.getOne(Page, "pageId", "project", "projectId");
+export const getPage = factory.getOne(models.Page, "page", "project");
 
-export const updatePage = factory.updateOne(
-  Page,
-  "pageId",
-  "project",
-  "projectId",
-);
+export const updatePage = factory.updateOne(models.Page, "page", "project");
 
-export const deletePage = factory.deleteOne(
-  Page,
-  "pageId",
-  "project",
-  "projectId",
-);
+export const deletePage = factory.deleteOne(models.Page, "page", "project");
 
-export const deletePages = factory.deleteAll(Page, "project", "projectId");
+export const deletePages = factory.deleteAll(models.Page, "project");
