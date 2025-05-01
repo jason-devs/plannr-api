@@ -2,42 +2,8 @@
 import fs from "fs";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import BackendResource from "./models/backendResourceModel.js";
-import Page from "./models/pageModel.js";
-import Project from "./models/projectModel.js";
-import TechStack from "./models/techStackModel.js";
-import UserStory from "./models/userStoriesModel.js";
-import User from "./models/userModel.js";
-import Role from "./models/roleModel.js";
-import Tech from "./models/techModel.js";
-
-const toCamelCase = function (str) {
-  return str
-    .toLowerCase()
-    .split(" ")
-    .map((word, index) =>
-      index === 0 ? word : word.charAt(0).toUpperCase() + word.slice(1),
-    )
-    .join("");
-};
-
-const toPascalCase = function (str) {
-  return str
-    .split(" ")
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join("");
-};
-
-const toTitleCase = function (str) {
-  return str
-    .split(" ")
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(" ");
-};
-
-const toKebabCase = function (str) {
-  return str.toLowerCase().split(" ").join("-");
-};
+import models from "./models/modelRegistry.js";
+import { convertCase } from "./utils/helpers.js";
 
 const clearResources = async () => {
   try {
@@ -48,13 +14,13 @@ const clearResources = async () => {
     ).replace("<USERNAME>", process.env.DB_USERNAME);
     await mongoose.connect(connectionString);
     console.log(`Connection successful`);
-    await UserStory.deleteMany();
-    await Page.deleteMany();
-    await BackendResource.deleteMany();
-    await Project.deleteMany();
-    await TechStack.deleteMany();
-    await Tech.deleteMany();
-    await Role.deleteMany();
+    await models.UserStory.deleteMany();
+    await models.Page.deleteMany();
+    await models.BackendResource.deleteMany();
+    await models.Project.deleteMany();
+    await models.TechStack.deleteMany();
+    await models.Tech.deleteMany();
+    await models.Role.deleteMany();
   } catch (error) {
     console.log(error);
   }
@@ -69,14 +35,14 @@ const clearAll = async () => {
     ).replace("<USERNAME>", process.env.DB_USERNAME);
     await mongoose.connect(connectionString);
     console.log(`Connection successful`);
-    await UserStory.deleteMany();
-    await Page.deleteMany();
-    await BackendResource.deleteMany();
-    await Project.deleteMany();
-    await TechStack.deleteMany();
-    await Tech.deleteMany();
-    await Role.deleteMany();
-    await User.deleteMany();
+    await models.UserStory.deleteMany();
+    await models.Page.deleteMany();
+    await models.BackendResource.deleteMany();
+    await models.Project.deleteMany();
+    await models.TechStack.deleteMany();
+    await models.Tech.deleteMany();
+    await models.Role.deleteMany();
+    await models.User.deleteMany();
   } catch (error) {
     console.log(error);
   }
@@ -85,13 +51,16 @@ const clearAll = async () => {
 const writeRouterFile = function (resourceName, parentResourceName) {
   const routerFile = fs
     .readFileSync("./routers/templateRouter.txt", "utf-8")
-    .replaceAll("%%VARIABLENAME%%", toCamelCase(resourceName))
-    .replaceAll("%%MODELNAME%%", toPascalCase(resourceName))
-    .replaceAll("%%PARENTVARIABLENAME%%", toCamelCase(parentResourceName))
-    .replaceAll("%%RESOURCENAME%%", toKebabCase(resourceName));
+    .replaceAll("%%VARIABLENAME%%", convertCase(resourceName, "camel"))
+    .replaceAll("%%MODELNAME%%", convertCase(resourceName, "pascal"))
+    .replaceAll(
+      "%%PARENTVARIABLENAME%%",
+      convertCase(parentResourceName, "camel"),
+    )
+    .replaceAll("%%RESOURCENAME%%", convertCase(resourceName, "kebab"));
 
   fs.writeFileSync(
-    `./routers/${toCamelCase(resourceName)}Router.js`,
+    `./routers/${convertCase(resourceName, "camel")}Router.js`,
     routerFile,
   );
 };
@@ -99,24 +68,40 @@ const writeRouterFile = function (resourceName, parentResourceName) {
 const writeModelFile = function (resourceName, parentResourceName) {
   const modelFile = fs
     .readFileSync("./models/templateModel.txt", "utf-8")
-    .replaceAll("%%VARIABLENAME%%", toCamelCase(resourceName))
-    .replaceAll("%%MODELNAME%%", toPascalCase(resourceName))
-    .replaceAll("%%PARENTVARIABLENAME%%", toCamelCase(parentResourceName))
-    .replaceAll("%%PARENTMODELNAME%%", toPascalCase(parentResourceName))
-    .replaceAll("%%MODELNAMESPACE%%", toTitleCase(resourceName));
+    .replaceAll("%%VARIABLENAME%%", convertCase(resourceName, "camel"))
+    .replaceAll("%%MODELNAME%%", convertCase(resourceName, "pascal"))
+    .replaceAll(
+      "%%PARENTVARIABLENAME%%",
+      convertCase(parentResourceName, "camel"),
+    )
+    .replaceAll(
+      "%%PARENTMODELNAME%%",
+      convertCase(parentResourceName, "pascal"),
+    )
+    .replaceAll("%%MODELNAMESPACE%%", convertCase(resourceName, "title"))
+    .replaceAll("%%NAME%%", resourceName)
+    .replaceAll("%%PARENTNAME%%", parentResourceName);
 
-  fs.writeFileSync(`./models/${toCamelCase(resourceName)}Model.js`, modelFile);
+  fs.writeFileSync(
+    `./models/${convertCase(resourceName, "camel")}Model.js`,
+    modelFile,
+  );
 };
 
 const writeControllerFile = function (resourceName, parentResourceName) {
   const controllerFile = fs
     .readFileSync("./controllers/templateController.txt", "utf-8")
-    .replaceAll("%%VARIABLENAME%%", toCamelCase(resourceName))
-    .replaceAll("%%MODELNAME%%", toPascalCase(resourceName))
-    .replaceAll("%%PARENTVARIABLENAME%%", toCamelCase(parentResourceName));
+    .replaceAll("%%VARIABLENAME%%", convertCase(resourceName, "camel"))
+    .replaceAll("%%MODELNAME%%", convertCase(resourceName, "pascal"))
+    .replaceAll(
+      "%%PARENTVARIABLENAME%%",
+      convertCase(parentResourceName, "camel"),
+    )
+    .replaceAll("%%NAME%%", resourceName)
+    .replaceAll("%%PARENTNAME%%", parentResourceName);
 
   fs.writeFileSync(
-    `./controllers/${toCamelCase(resourceName)}Controller.js`,
+    `./controllers/${convertCase(resourceName, "camel")}Controller.js`,
     controllerFile,
   );
 };

@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 import slugify from "slugify";
-import %%PARENTMODELNAME%% from "./%%PARENTVARIABLENAME%%Model.js";
-import * as factory from "./validatorFactory.js";
+import * as relationships from "./relationships.js";
 
 const %%VARIABLENAME%%Schema = mongoose.Schema({
   name: {
@@ -11,11 +10,6 @@ const %%VARIABLENAME%%Schema = mongoose.Schema({
   %%PARENTVARIABLENAME%%: {
     type: mongoose.Schema.ObjectId,
     ref: "%%PARENTMODELNAME%%",
-    validate: {
-      validator: id => factory.validReference(%%PARENTMODELNAME%%, id),
-      message: props =>
-        factory.validReferenceMessage("%%MODELNAMESPACE%%", props),
-    },
   },
 
   createdAt: {
@@ -29,55 +23,28 @@ const %%VARIABLENAME%%Schema = mongoose.Schema({
   next();
 });
 
-%%VARIABLENAME%%Schema.post("findOneAndDelete", async %%VARIABLENAME%% => {
-  await %%PARENTMODELNAME%%.findByIdAndUpdate(%%VARIABLENAME%%.%%PARENTVARIABLENAME%%, {
-    $pull: { %%VARIABLENAME%%s: %%VARIABLENAME%%._id },
-  });
+%%VARIABLENAME%%Schema.post("findOneAndDelete", async function (%%VARIABLENAME%%) {
+  await relationships.afterDeleteOne(%%VARIABLENAME%%, "%%PARENTNAME%%", "%%NAME%%");
 });
 
 %%VARIABLENAME%%Schema.post("deleteMany", async function () {
-  await %%PARENTMODELNAME%%.findByIdAndUpdate(
-    this.getQuery().%%PARENTVARIABLENAME%%,
-    { %%VARIABLENAME%%s: [] },
-    { new: true },
-  );
+  await relationships.afterDeleteMany("%%PARENTNAME%%", "%%NAME%%", this);
 });
 
-%%VARIABLENAME%%Schema.post("save", async %%VARIABLENAME%% => {
-  await %%PARENTMODELNAME%%.findByIdAndUpdate(
-    %%VARIABLENAME%%.%%PARENTVARIABLENAME%%,
-    { $push: { %%VARIABLENAME%%s: %%VARIABLENAME%%._id } },
-    { new: true },
-  );
+%%VARIABLENAME%%Schema.post("save", async function (%%VARIABLENAME%%) {
+  await relationships.afterAddOne(%%VARIABLENAME%%, "%%PARENTNAME%%", "%%NAME%%");
 });
 
-const %%MODELNAME%% = mongoose.model(
-  "%%MODELNAME%%",
-  %%VARIABLENAME%%Schema,
-);
-
-export default %%MODELNAME%%;
+export default %%VARIABLENAME%%Schema;
 
 /*
 
-NOTE: Add the following to %%PARENTMODELNAME%%:
+NOTE: Add the following to modelRegistry.js:
 
-  import %%MODELNAME%% from "./%%VARIABLENAME%%Model.js"
+  import %%VARIABLENAME%%Schema from "./%%VARIABLENAME%%Schema.js"
   
-  %%VARIABLENAME%%s: {
-    type: [mongoose.Schema.ObjectId],
-    ref: "%%MODELNAME%%",
-    validate: {
-      validator: id => factory.validReference(%%MODELNAME%%, id),
-      message: props =>
-        factory.validReferenceMessage("%%MODELNAMESPACE%%", props),
-    },
-  },
+  %%MODELNAME%%: mongoose.model("%%MODELNAME%%", roleSchema),
 
-NOTE: Along with:
-
-  await %%MODELNAME%%.deleteMany({
-    _id: { $in: %%PARENTVARIABLENAME%%.%%VARIABLENAME%%s },
-  });
+NOTE: And don't forget to add me to any DELETE logic in %%PARENTVARIABLENAME%%Schema.js
 
 */
