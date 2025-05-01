@@ -43,6 +43,11 @@ const projectSchema = new mongoose.Schema({
     ref: "Role",
   },
 
+  customRoleList: {
+    type: [mongoose.Schema.ObjectId],
+    ref: "CustomRole",
+  },
+
   slug: {
     type: String,
   },

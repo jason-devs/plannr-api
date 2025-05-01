@@ -83,7 +83,7 @@ const writeModelFile = function (resourceName, parentResourceName) {
     .replaceAll("%%PARENTNAME%%", parentResourceName);
 
   fs.writeFileSync(
-    `./models/${convertCase(resourceName, "camel")}Model.js`,
+    `./models/${convertCase(resourceName, "camel")}Schema.js`,
     modelFile,
   );
 };

@@ -14,6 +14,7 @@ import userStoriesRouter from "./routers/userStoriesRouter.js";
 import pageRouter from "./routers/pageRouter.js";
 import backendResourceRouter from "./routers/backendResourceRouter.js";
 import techStackRouter from "./routers/techStackRouter.js";
+import customRoleRouter from "./routers/customRoleRouter.js";
 import roleRouter from "./routers/roleRouter.js";
 import techRouter from "./routers/techRouter.js";
 import globalErrorHandler from "./controllers/errorController.js";
@@ -49,13 +50,14 @@ app.use(express.json());
 app.use(`/api/v1/auth`, authRouter);
 app.use(`/api/v1/user`, userRouter);
 app.use(`/api/v1/project`, projectRouter);
+app.use(`/api/v1/role`, roleRouter);
 
 //NOTE: Nested routes:
 projectRouter.use("/:projectId/user-stories", userStoriesRouter);
 projectRouter.use("/:projectId/page", pageRouter);
 projectRouter.use("/:projectId/backend-resource", backendResourceRouter);
 projectRouter.use("/:projectId/tech-stack", techStackRouter);
-projectRouter.use("/:projectId/role", roleRouter);
+projectRouter.use("/:projectId/custom-role", customRoleRouter);
 projectRouter.use("/:projectId/tech-stack/:techStackId/tech", techRouter);
 
 app.all("*", (req, res, next) => {

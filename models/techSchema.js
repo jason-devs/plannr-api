@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import slugify from "slugify";
-import * as factory from "./validatorFactory.js";
 import * as relationships from "./relationships.js";
 
 const techSchema = mongoose.Schema({
@@ -11,10 +10,6 @@ const techSchema = mongoose.Schema({
   techStack: {
     type: mongoose.Schema.ObjectId,
     ref: "TechStack",
-    validate: {
-      validator: id => factory.validReference(mongoose.model("TechStack"), id),
-      message: props => factory.validReferenceMessage("Tech", props),
-    },
   },
 
   createdAt: {
