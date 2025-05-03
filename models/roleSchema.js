@@ -1,25 +1,19 @@
 import mongoose from "mongoose";
 import slugify from "slugify";
+import * as factory from "./validatorFactory.js";
 
 const settings = { name: "role", parent: "none", isPrivate: false };
 
 const roleSchema = mongoose.Schema({
-  name: {
-    type: String,
-  },
+  name: factory.validText(settings, "title", true, ` `),
 
-  description: {
-    type: String,
-  },
+  description: factory.validText(settings, "small", true),
 
   custom: {
     type: Boolean,
   },
 
-  createdBy: {
-    type: mongoose.Schema.ObjectId,
-    ref: "User",
-  },
+  createdBy: factory.validReference(settings.name, "user"),
 
   createdAt: {
     type: Date,

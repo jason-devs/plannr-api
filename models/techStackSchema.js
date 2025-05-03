@@ -10,28 +10,15 @@ const settings = {
 };
 
 const techStackSchema = mongoose.Schema({
-  name: {
-    type: String,
-  },
+  name: factory.validText(settings, "title", true, ` `, true),
 
-  project: {
-    type: mongoose.Schema.ObjectId,
-    ref: "Project",
-    validate: {
-      validator: id => factory.validReference(mongoose.model("Project"), id),
-      message: props => factory.validReferenceMessage("Tech-Stack", props),
-    },
-  },
+  project: factory.validReference(settings.name, settings.parent),
 
-  techList: {
-    type: [mongoose.Schema.ObjectId],
-    ref: "Tech",
-  },
+  techList: factory.validReference(settings.name, "tech", false, true, true),
 
-  createdBy: {
-    type: mongoose.Schema.ObjectId,
-    ref: "User",
-  },
+  createdBy: factory.validReference(settings.name, "user"),
+
+  slug: factory.validSlug(settings.name),
 
   createdAt: {
     type: Date,

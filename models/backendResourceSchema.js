@@ -10,24 +10,11 @@ const settings = {
 };
 
 const backendResourceSchema = mongoose.Schema({
-  name: {
-    type: String,
-  },
+  name: factory.validText(settings, "title", true, ` `),
 
-  project: {
-    type: mongoose.Schema.ObjectId,
-    ref: "Project",
-    validate: {
-      validator: id => factory.validReference(mongoose.model("Project"), id),
-      message: props =>
-        factory.validReferenceMessage("Backend Resource", props),
-    },
-  },
+  project: factory.validReference(settings.name, settings.parent),
 
-  createdBy: {
-    type: mongoose.Schema.ObjectId,
-    ref: "User",
-  },
+  createdBy: factory.validReference(settings.name, "user"),
 
   createdAt: {
     type: Date,
