@@ -3,6 +3,12 @@ import slugify from "slugify";
 import * as factory from "./validatorFactory.js";
 import * as relationships from "./relationships.js";
 
+const settings = {
+  name: "tech stack",
+  parent: "project",
+  isPrivate: true,
+};
+
 const techStackSchema = mongoose.Schema({
   name: {
     type: String,
@@ -22,10 +28,17 @@ const techStackSchema = mongoose.Schema({
     ref: "Tech",
   },
 
+  createdBy: {
+    type: mongoose.Schema.ObjectId,
+    ref: "User",
+  },
+
   createdAt: {
     type: Date,
   },
 });
+
+techStackSchema.staticSettings = settings;
 
 techStackSchema.pre("save", async function (next) {
   this.slug = slugify(this.name, { lower: true });
@@ -34,15 +47,15 @@ techStackSchema.pre("save", async function (next) {
 });
 
 techStackSchema.post("findOneAndDelete", async function (techStack) {
-  await relationships.afterDeleteOne(techStack, "project", "tech stack");
+  await relationships.afterDeleteOne(techStack);
 });
 
 techStackSchema.post("deleteMany", async function () {
-  await relationships.afterDeleteMany("project", "tech stack", this);
+  await relationships.afterDeleteMany(this);
 });
 
 techStackSchema.post("save", async function (techStack) {
-  await relationships.afterAddOne(techStack, "project", "tech stack");
+  await relationships.afterAddOne(techStack);
 });
 
 export default techStackSchema;

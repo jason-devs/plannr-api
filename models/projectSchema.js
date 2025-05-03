@@ -1,21 +1,18 @@
 import mongoose from "mongoose";
 import slugify from "slugify";
-import * as factory from "./validatorFactory.js";
 import * as relationships from "./relationships.js";
+
+const settings = {
+  name: "project",
+  parent: "user",
+  isPrivate: true,
+  children: ["tech stack", "backend resource", "page", "user story"],
+};
 
 const projectSchema = new mongoose.Schema({
   name: {
     type: String,
     required: [true, "We need a name to create your project!"],
-  },
-
-  user: {
-    type: mongoose.Schema.ObjectId,
-    ref: "User",
-    validate: {
-      validator: id => factory.validReference(mongoose.model("User"), id),
-      message: props => factory.validReferenceMessage("Project", props),
-    },
   },
 
   userStoryList: {
@@ -43,13 +40,13 @@ const projectSchema = new mongoose.Schema({
     ref: "Role",
   },
 
-  customRoleList: {
-    type: [mongoose.Schema.ObjectId],
-    ref: "CustomRole",
-  },
-
   slug: {
     type: String,
+  },
+
+  createdBy: {
+    type: mongoose.Schema.ObjectId,
+    ref: "User",
   },
 
   createdAt: {
@@ -57,30 +54,24 @@ const projectSchema = new mongoose.Schema({
   },
 });
 
+projectSchema.staticSettings = settings;
+
 projectSchema.pre("save", function (next) {
   this.slug = slugify(this.name, { lower: true });
   next();
 });
 
 projectSchema.post("save", async function (project) {
-  await relationships.afterAddOne(project, "user", "project");
+  await relationships.afterAddOne(project);
 });
 
 projectSchema.post("deleteMany", async function () {
-  await relationships.afterDeleteMany("user", "project", this);
+  await relationships.afterDeleteMany(this);
 });
 
 projectSchema.post("findOneAndDelete", async function (project) {
-  await relationships.deleteMultipleChildren(project, [
-    "tech stack",
-    "backend resource",
-    "page",
-    "user story",
-  ]);
-});
-
-projectSchema.post("findOneAndDelete", async function (project) {
-  await relationships.afterDeleteOne(project, "user", "project");
+  await relationships.afterDeleteOne(project);
+  await relationships.deleteMultipleChildren(project);
 });
 
 export default projectSchema;

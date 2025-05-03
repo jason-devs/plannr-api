@@ -2,35 +2,56 @@ import mongoose from "mongoose";
 import * as config from "../utils/config.js";
 import { convertCase } from "../utils/helpers.js";
 
-export const afterDeleteOne = async function (deletedDoc, parentRef, childRef) {
-  await mongoose
-    .model(convertCase(parentRef, "pascal"))
-    .findByIdAndUpdate(deletedDoc[convertCase(parentRef, "camel")], {
-      $pull: { [`${convertCase(childRef, "camel")}List`]: deletedDoc._id },
-    });
+const generateParentInfoDoc = doc => {
+  const { name, parent } = doc.constructor.schema.staticSettings;
+  const parentModel = mongoose.model(convertCase(parent, "pascal"));
+  const parentPath = `${convertCase(name, "camel")}List`;
+  const parentId =
+    parent === "user" ? doc.createdBy : doc[convertCase(parent, "camel")];
+
+  return { parentModel, parentId, parentPath };
 };
 
-export const afterDeleteMany = async function (parentRef, childRef, that) {
-  await mongoose
-    .model(convertCase(parentRef, "pascal"))
-    .findByIdAndUpdate(that.getQuery()[convertCase(parentRef, "camel")], {
-      [`${convertCase(childRef, "camel")}List`]: [],
-    });
+const generateParentInfoThat = that => {
+  const { name, parent } = that.schema.staticSettings;
+  const query = that.getQuery();
+  const parentModel = mongoose.model(convertCase(parent, "pascal"));
+  const parentPath = `${convertCase(name, "camel")}List`;
+  const parentId =
+    parent === "user" ? query.createdBy : query[convertCase(parent, "camel")];
+
+  return { parentModel, parentId, parentPath };
 };
 
-export const afterAddOne = async function (addedDoc, parentRef, childRef) {
-  await mongoose
-    .model(convertCase(parentRef, "pascal"))
-    .findByIdAndUpdate(addedDoc[convertCase(parentRef, "camel")], {
-      $push: { [`${convertCase(childRef, "camel")}List`]: addedDoc._id },
-    });
+export const afterDeleteOne = async function (deletedDoc) {
+  const { parentModel, parentId, parentPath } =
+    generateParentInfoDoc(deletedDoc);
+
+  await parentModel.findByIdAndUpdate(parentId, {
+    $pull: { [parentPath]: deletedDoc._id },
+  });
 };
 
-export const deleteMultipleChildren = async function (
-  parentDoc,
-  childrenToClear,
-) {
-  childrenToClear.forEach(async child => {
+export const afterDeleteMany = async function (that) {
+  const { parentModel, parentId, parentPath } = generateParentInfoThat(that);
+
+  await parentModel.findByIdAndUpdate(parentId, {
+    [parentPath]: [],
+  });
+};
+
+export const afterAddOne = async function (addedDoc) {
+  const { parentModel, parentId, parentPath } = generateParentInfoDoc(addedDoc);
+
+  await parentModel.findByIdAndUpdate(parentId, {
+    $push: { [parentPath]: addedDoc._id },
+  });
+};
+
+export const deleteMultipleChildren = async function (parentDoc) {
+  const { children } = parentDoc.constructor.schema.staticSettings;
+
+  children.forEach(async child => {
     if (config.EXCLUDEFROMDELETE.includes(child.toLowerCase())) return;
     await mongoose.model(convertCase(child, "pascal")).deleteMany({
       _id: { $in: parentDoc[`${convertCase(child, "camel")}List`] },

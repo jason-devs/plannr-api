@@ -9,7 +9,8 @@ router.use(authController.userProtect);
 router
   .route("/")
   .get(projectController.getProjects)
-  .post(projectController.createProject);
+  .post(projectController.createProject)
+  .delete(projectController.deleteProjects);
 
 router
   .route("/:projectId")

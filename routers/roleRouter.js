@@ -1,7 +1,10 @@
 import express from "express";
+import * as authController from "../controllers/authController.js";
 import * as roleController from "../controllers/roleController.js";
 
-const router = express.Router({ mergeParams: true });
+const router = express.Router();
+
+router.use(authController.userProtect);
 
 router
   .route("/")
