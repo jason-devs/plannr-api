@@ -2,6 +2,12 @@ import mongoose from "mongoose";
 import validator from "validator";
 import * as factory from "./validatorFactory.js";
 
+const settings = {
+  name: "user story",
+  parent: "project",
+  isPrivate: true,
+};
+
 const userStorySchema = mongoose.Schema({
   story: {
     type: String,
@@ -62,10 +68,17 @@ const userStorySchema = mongoose.Schema({
     ],
   },
 
+  createdBy: {
+    type: mongoose.Schema.ObjectId,
+    ref: "User",
+  },
+
   createdAt: {
     type: Date,
   },
 });
+
+userStorySchema.staticSettings = settings;
 
 userStorySchema.pre("save", async function (next) {
   const userStories = await this.constructor.find({ project: this.project });

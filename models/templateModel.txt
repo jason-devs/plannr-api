@@ -1,6 +1,13 @@
 import mongoose from "mongoose";
 import slugify from "slugify";
 import * as relationships from "./relationships.js";
+import { convertCase } from "../utils/helpers.js";
+
+export const settings = {
+  parent: "%%PARENTNAME%%",
+  name: "%%NAME%%",
+  isPrivate: false,
+}
 
 const %%VARIABLENAME%%Schema = mongoose.Schema({
   name: {
@@ -9,13 +16,20 @@ const %%VARIABLENAME%%Schema = mongoose.Schema({
 
   %%PARENTVARIABLENAME%%: {
     type: mongoose.Schema.ObjectId,
-    ref: "%%PARENTMODELNAME%%",
+    ref: convertCase(settings.parent, "pascal"),
+  },
+
+  createdBy: {
+    type: mongoose.Schema.ObjectId,
+    ref: "User",
   },
 
   createdAt: {
     type: Date,
   },
 });
+
+%%VARIABLENAME%%Schema.staticSettings = settings;
 
 %%VARIABLENAME%%Schema.pre("save", async function (next) {
   this.slug = slugify(this.name, { lower: true });
@@ -24,15 +38,15 @@ const %%VARIABLENAME%%Schema = mongoose.Schema({
 });
 
 %%VARIABLENAME%%Schema.post("findOneAndDelete", async function (%%VARIABLENAME%%) {
-  await relationships.afterDeleteOne(%%VARIABLENAME%%, "%%PARENTNAME%%", "%%NAME%%");
+  await relationships.afterDeleteOne(%%VARIABLENAME%%);
 });
 
 %%VARIABLENAME%%Schema.post("deleteMany", async function () {
-  await relationships.afterDeleteMany("%%PARENTNAME%%", "%%NAME%%", this);
+  await relationships.afterDeleteMany(this);
 });
 
 %%VARIABLENAME%%Schema.post("save", async function (%%VARIABLENAME%%) {
-  await relationships.afterAddOne(%%VARIABLENAME%%, "%%PARENTNAME%%", "%%NAME%%");
+  await relationships.afterAddOne(%%VARIABLENAME%%);
 });
 
 export default %%VARIABLENAME%%Schema;

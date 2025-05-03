@@ -1,35 +1,14 @@
 import * as factory from "./controllerFactory.js";
 import models from "../models/modelRegistry.js";
 
-export const create%%MODELNAME%% = factory.createOne(
-  models.%%MODELNAME%%,
-  "%%PARENTNAME%%",
-);
+export const create%%MODELNAME%% = factory.createOne(models.%%MODELNAME%%);
 
-export const get%%MODELNAME%%s = factory.getAll(
-  models.%%MODELNAME%%,
-  "%%PARENTNAME%%",
-);
+export const get%%MODELNAME%%s = factory.getAll(models.%%MODELNAME%%);
 
-export const get%%MODELNAME%% = factory.getOne(
-  models.%%MODELNAME%%,
-  "%%NAME%%",
-  "%%PARENTNAME%%",
-);
+export const get%%MODELNAME%% = factory.getOne(models.%%MODELNAME%%);
 
-export const update%%MODELNAME%% = factory.updateOne(
-  models.%%MODELNAME%%,
-  "%%NAME%%",
-  "%%PARENTNAME%%",
-);
+export const update%%MODELNAME%% = factory.updateOne(models.%%MODELNAME%%);
 
-export const delete%%MODELNAME%% = factory.deleteOne(
-  models.%%MODELNAME%%,
-  "%%NAME%%",
-  "%%PARENTNAME%%",
-);
+export const delete%%MODELNAME%% = factory.deleteOne(models.%%MODELNAME%%);
 
-export const delete%%MODELNAME%%s = factory.deleteAll(
-  models.%%MODELNAME%%,
-  "%%PARENTNAME%%",
-);
+export const delete%%MODELNAME%%s = factory.deleteAll(models.%%MODELNAME%%);

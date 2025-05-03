@@ -2,6 +2,12 @@ import mongoose from "mongoose";
 import slugify from "slugify";
 import * as relationships from "./relationships.js";
 
+const settings = {
+  name: "tech",
+  parent: "tech stack",
+  isPrivate: false,
+};
+
 const techSchema = mongoose.Schema({
   name: {
     type: String,
@@ -12,10 +18,17 @@ const techSchema = mongoose.Schema({
     ref: "TechStack",
   },
 
+  createdBy: {
+    type: mongoose.Schema.ObjectId,
+    ref: "User",
+  },
+
   createdAt: {
     type: Date,
   },
 });
+
+techSchema.staticSettings = settings;
 
 techSchema.pre("save", async function (next) {
   this.slug = slugify(this.name, { lower: true });
@@ -24,15 +37,15 @@ techSchema.pre("save", async function (next) {
 });
 
 techSchema.post("findOneAndDelete", async function (tech) {
-  await relationships.afterDeleteOne(tech, "tech stack", "tech");
+  await relationships.afterDeleteOne(tech);
 });
 
 techSchema.post("deleteMany", async function () {
-  await relationships.afterDeleteMany("tech stack", "tech", this);
+  await relationships.afterDeleteMany(this);
 });
 
 techSchema.post("save", async function (tech) {
-  await relationships.afterAddOne(tech, "tech stack", "tech");
+  await relationships.afterAddOne(tech);
 });
 
 export default techSchema;
