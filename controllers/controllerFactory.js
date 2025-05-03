@@ -151,6 +151,7 @@ export const updateOne = Model =>
 
     const updatedDoc = await Model.findOneAndUpdate(query, req.body, {
       new: true,
+      runValidators: true,
     });
 
     if (!updatedDoc) {

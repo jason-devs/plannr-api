@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import slugify from "slugify";
 import * as relationships from "./relationships.js";
+import * as factory from "./validatorFactory.js";
 
 const settings = {
   name: "project",
@@ -10,44 +11,39 @@ const settings = {
 };
 
 const projectSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, "We need a name to create your project!"],
-  },
+  name: factory.validText(settings, "title", true, ` `),
 
-  userStoryList: {
-    type: [mongoose.Schema.ObjectId],
-    ref: "UserStory",
-  },
+  userStoryList: factory.validReference(
+    settings.name,
+    "user story",
+    false,
+    true,
+    true,
+  ),
 
-  pageList: {
-    type: [mongoose.Schema.ObjectId],
-    ref: "Page",
-  },
+  pageList: factory.validReference(settings.name, "page", false, true, true),
 
-  backendResourceList: {
-    type: [mongoose.Schema.ObjectId],
-    ref: "BackendResource",
-  },
+  backendResourceList: factory.validReference(
+    settings.name,
+    "backend resource",
+    false,
+    true,
+    true,
+  ),
 
-  techStackList: {
-    type: [mongoose.Schema.ObjectId],
-    ref: "TechStack",
-  },
+  techStackList: factory.validReference(
+    settings.name,
+    "tech stack",
+    false,
+    true,
+    true,
+  ),
 
-  roleList: {
-    type: [mongoose.Schema.ObjectId],
-    ref: "Role",
-  },
+  roleList: factory.validReference(settings.name, "role", false, true, true),
 
-  slug: {
-    type: String,
-  },
+  slug: factory.validSlug(settings.name),
 
-  createdBy: {
-    type: mongoose.Schema.ObjectId,
-    ref: "User",
-  },
+  createdBy: factory.validReference(settings.name, "user"),
 
   createdAt: {
     type: Date,

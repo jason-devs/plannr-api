@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import validator from "validator";
 import * as factory from "./validatorFactory.js";
 
 const settings = {
@@ -9,29 +8,14 @@ const settings = {
 };
 
 const userStorySchema = mongoose.Schema({
-  story: {
-    type: String,
-    required: [true, "We need some text to make your user story!"],
-    maxLength: [
-      250,
-      `Sorry, that story is too long. Try shortening it, or breaking it into multiple stories. Max length is {MAXLENGTH} characters.`,
-    ],
-    validate: {
-      validator: story =>
-        validator.isAlphanumeric(story, "en-US", { ignore: `.,- !?"'/@%` }),
-      message: `Apologies, user stories can only contain alphanumeric characters and the following special characters: ". , - ! ? " ' / @ %"`,
-    },
-  },
+  story: factory.validText(settings, true),
 
   completed: {
     type: Boolean,
     default: false,
   },
 
-  role: {
-    type: mongoose.Schema.ObjectId,
-    ref: "Role",
-  },
+  role: factory.validReference(settings.name, "role"),
 
   priority: {
     type: String,
@@ -50,28 +34,11 @@ const userStorySchema = mongoose.Schema({
     type: Number,
   },
 
-  project: {
-    type: mongoose.Schema.ObjectId,
-    ref: "Project",
-    required: [true, "Your user story needs a project!"],
-    validate: {
-      validator: id => factory.validReference(mongoose.model("Project"), id),
-      message: props => factory.validReferenceMessage("User Story", props),
-    },
-  },
+  project: factory.validReference(settings.name, settings.parent),
 
-  slug: {
-    type: String,
-    unique: [
-      true,
-      "Apologies, the auto generated slug for this user story was not unique in the database. Please try again.",
-    ],
-  },
+  slug: factory.validSlug(settings.name),
 
-  createdBy: {
-    type: mongoose.Schema.ObjectId,
-    ref: "User",
-  },
+  createdBy: factory.validReference(settings.name, "user"),
 
   createdAt: {
     type: Date,
@@ -81,12 +48,16 @@ const userStorySchema = mongoose.Schema({
 userStorySchema.staticSettings = settings;
 
 userStorySchema.pre("save", async function (next) {
-  const userStories = await this.constructor.find({ project: this.project });
-  this.position = userStories.length + 1;
-  const role = await mongoose.model("Role").findById(this.role);
-  this.story = this.story.replace("%%ROLE%%", role.name);
+  const [storiesCount, role] = await Promise.all([
+    this.constructor.countDocuments({ project: this.project }),
+    mongoose.model("Role").findById(this.role, { name: 1 }),
+  ]);
+
+  this.position = storiesCount + 1;
+  this.story = this.story.replace("((ROLE))", role.name);
   this.createdAt = new Date();
-  this.slug = `user-story-${this._id.toString().slice(-5).toUpperCase()}${String(Date.now()).slice(-3)}`;
+  this.slug = `US-${this._id.toString().slice(-5)}-${Date.now().toString(36)}`;
+
   next();
 });
 
