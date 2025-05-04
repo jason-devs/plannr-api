@@ -1,21 +1,42 @@
 import mongoose from "mongoose";
 import slugify from "slugify";
 import * as factory from "./validatorFactory.js";
+import { VALIDTECHFIELDS } from "../utils/config.js";
 
 const settings = {
   name: "tech",
   parent: "none",
   isPrivate: false,
   deleteType: "soft",
-  checkCustom: true,
-  overviewSel: "name",
+  checkCustom: false,
+  overviewSel: "name field icon",
   overviewPop: [],
   fullSel: "-__v -createdAt -createdBy",
   fullPop: [],
 };
 
 const techSchema = mongoose.Schema({
-  name: factory.validText(settings, "title", true, ` `, true),
+  name: factory.validText(settings, "title", true, ` ./`, true),
+
+  description: factory.validText(settings, "small", true),
+
+  field: factory.validEnum(settings.name, VALIDTECHFIELDS),
+
+  pros: {
+    type: [String],
+  },
+
+  cons: {
+    type: [String],
+  },
+
+  icon: {
+    type: String,
+  },
+
+  openSource: {
+    type: Boolean,
+  },
 
   active: {
     type: Boolean,
@@ -26,6 +47,44 @@ const techSchema = mongoose.Schema({
     type: Boolean,
     default: true,
   },
+
+  released: {
+    type: Date,
+  },
+
+  currentVersion: {
+    type: String,
+  },
+
+  stability: factory.validEnum(settings.name, [
+    "Experimental",
+    "Stable",
+    "Deprecated",
+    "Legacy",
+  ]),
+
+  github: {
+    stars: Number,
+    forks: Number,
+    lastCommit: Date,
+    openIssues: Number,
+  },
+
+  license: {
+    type: factory.validEnum("License", [
+      "MIT",
+      "Apache-2.0",
+      "GPL",
+      "Proprietary",
+    ]),
+    cost: factory.validEnum("license", ["Free", "Freemium", "Paid"]),
+  },
+
+  learningCurve: factory.validEnum(settings.name, [
+    "Beginner",
+    "Intermediate",
+    "Advanced",
+  ]),
 
   createdBy: factory.validReference(settings.name, "user"),
 
