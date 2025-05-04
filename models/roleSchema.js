@@ -2,7 +2,13 @@ import mongoose from "mongoose";
 import slugify from "slugify";
 import * as factory from "./validatorFactory.js";
 
-const settings = { name: "role", parent: "none", isPrivate: false };
+const settings = {
+  name: "role",
+  parent: "none",
+  isPrivate: false,
+  deleteType: "soft",
+  checkCustom: true,
+};
 
 const roleSchema = mongoose.Schema({
   name: factory.validText(settings, "title", true, ` `),
@@ -11,6 +17,12 @@ const roleSchema = mongoose.Schema({
 
   custom: {
     type: Boolean,
+    default: false,
+  },
+
+  active: {
+    type: Boolean,
+    default: true,
   },
 
   createdBy: factory.validReference(settings.name, "user"),
@@ -21,6 +33,10 @@ const roleSchema = mongoose.Schema({
 });
 
 roleSchema.staticSettings = settings;
+
+roleSchema.query.active = function () {
+  return this.where({ active: true });
+};
 
 roleSchema.pre("save", async function (next) {
   this.slug = slugify(this.name, { lower: true });

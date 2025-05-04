@@ -7,6 +7,8 @@ const settings = {
   name: "page",
   parent: "project",
   isPrivate: true,
+  deleteType: "hard",
+  checkCustom: true,
 };
 
 const pageSchema = mongoose.Schema({

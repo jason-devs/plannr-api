@@ -5,6 +5,8 @@ const settings = {
   name: "user story",
   parent: "project",
   isPrivate: true,
+  deleteType: "hard",
+  checkCustom: false,
 };
 
 const userStorySchema = mongoose.Schema({

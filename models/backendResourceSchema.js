@@ -7,6 +7,8 @@ const settings = {
   name: "backend resource",
   parent: "project",
   isPrivate: true,
+  deleteType: "hard",
+  checkCustom: false,
 };
 
 const backendResourceSchema = mongoose.Schema({

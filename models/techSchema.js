@@ -6,10 +6,22 @@ const settings = {
   name: "tech",
   parent: "none",
   isPrivate: false,
+  deleteType: "soft",
+  checkCustom: true,
 };
 
 const techSchema = mongoose.Schema({
   name: factory.validText(settings, "title", true, ` `, true),
+
+  active: {
+    type: Boolean,
+    default: true,
+  },
+
+  custom: {
+    type: Boolean,
+    default: true,
+  },
 
   createdBy: factory.validReference(settings.name, "user"),
 
@@ -19,6 +31,10 @@ const techSchema = mongoose.Schema({
 });
 
 techSchema.staticSettings = settings;
+
+techSchema.query.active = function () {
+  return this.where({ active: true });
+};
 
 techSchema.pre("save", async function (next) {
   this.slug = slugify(this.name, { lower: true });

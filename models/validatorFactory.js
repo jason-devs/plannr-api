@@ -54,13 +54,13 @@ export const validText = (
   if (size === "title") length = TITLELIMIT;
 
   const required = isRequired
-    ? [true, `We need some {PATH} text to make a ${settings.name}!`]
+    ? [true, `We need a "{PATH}" to make a ${settings.name}!`]
     : false;
 
   const unique = isUnique
     ? [
         true,
-        `We already have a ${settings.name} with that exact {PATH}. They need to all be different.`,
+        `We already have a ${settings.name} with that ${size === "title" ? "title" : "text"}. They need to all be different.`,
       ]
     : false;
 

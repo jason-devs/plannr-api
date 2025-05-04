@@ -8,6 +8,8 @@ const settings = {
   parent: "user",
   isPrivate: true,
   children: ["backend resource", "page", "user story"],
+  deleteType: "hard",
+  checkCustom: false,
 };
 
 const projectSchema = new mongoose.Schema({

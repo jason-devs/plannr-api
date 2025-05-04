@@ -21,11 +21,12 @@ const authorize = (req, next) => {
 const generateAllQuery = (req, Model, next) => {
   const id = authorize(req, next);
 
-  const { parent, isPrivate } = Model.schema.staticSettings;
+  const { parent, isPrivate, checkCustom } = Model.schema.staticSettings;
 
   const makePrivate = isPrivate ? { createdBy: id } : {};
+  const filterCustom = checkCustom ? { custom: true } : {};
 
-  let query = { ...makePrivate };
+  let query = { ...makePrivate, ...filterCustom };
 
   if (parent !== "none") {
     const parentKey =
@@ -36,6 +37,7 @@ const generateAllQuery = (req, Model, next) => {
 
     query = {
       ...makePrivate,
+      ...filterCustom,
       [parentKey]: parentId,
     };
   }
@@ -46,12 +48,14 @@ const generateAllQuery = (req, Model, next) => {
 const generateOneQuery = (req, Model, next) => {
   const id = authorize(req, next);
 
-  const { name, parent, isPrivate } = Model.schema.staticSettings;
+  const { name, parent, isPrivate, checkCustom } = Model.schema.staticSettings;
 
   const makePrivate = isPrivate ? { createdBy: id } : {};
+  const filterCustom = checkCustom ? { custom: true } : {};
 
   let query = {
     ...makePrivate,
+    ...filterCustom,
     _id: req.params[`${convertCase(name, "camel")}Id`],
   };
 
@@ -64,6 +68,7 @@ const generateOneQuery = (req, Model, next) => {
 
     query = {
       ...makePrivate,
+      ...filterCustom,
       [parentKey]: parentId,
       _id: req.params[`${convertCase(name, "camel")}Id`],
     };
@@ -175,7 +180,20 @@ export const deleteOne = Model =>
   catchAsyncErrors(async (req, res, next) => {
     const query = generateOneQuery(req, Model, next);
 
-    const deletedDoc = await Model.findOneAndDelete(query);
+    const { deleteType } = Model.schema.staticSettings;
+
+    let deletedDoc;
+    if (deleteType === "soft") {
+      deletedDoc = await Model.findOneAndUpdate(
+        query,
+        { active: false },
+        { new: true },
+      );
+    }
+
+    if (deleteType === "hard") {
+      deletedDoc = await Model.findOneAndDelete(query);
+    }
 
     if (!deletedDoc) {
       return next(
@@ -196,7 +214,17 @@ export const deleteAll = Model =>
   catchAsyncErrors(async (req, res, next) => {
     const query = generateAllQuery(req, Model, next);
 
-    const deleteCount = await Model.deleteMany(query);
+    const { deleteType } = Model.schema.staticSettings;
+
+    let deleteCount;
+    if (deleteType === "soft") {
+      const deactivatedDocs = await Model.updateMany(query, { active: false });
+      deleteCount = deactivatedDocs.modifiedCount;
+    }
+
+    if (deleteType === "hard") {
+      deleteCount = await Model.deleteMany(query);
+    }
 
     res.status(200).json({
       status: "success",
@@ -260,3 +288,9 @@ export const updateReference = (Model, refName) =>
       },
     });
   });
+
+export const cleanupCollection = async Model => {
+  const deletedCount = await Model.deleteMany({ active: false });
+  // eslint-disable-next-line no-console
+  console.log(deletedCount);
+};
