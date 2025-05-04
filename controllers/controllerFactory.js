@@ -204,16 +204,40 @@ export const deleteAll = Model =>
     });
   });
 
-export const addReference = (Model, refName) =>
+export const updateReference = (Model, refName) =>
   catchAsyncErrors(async (req, res, next) => {
+    const { action } = req.query;
+
+    if (!action || !["add", "remove"].includes(action)) {
+      return next(
+        new AppError(
+          `Cannot perform this action without a valid action query, your options are "action=add" OR "action=remove"`,
+          400,
+        ),
+      );
+    }
+
     const query = generateOneQuery(req, Model, next);
 
-    const update = {
-      $addToSet: {
-        [`${convertCase(refName, "camel")}List`]:
-          req.params[`${convertCase(refName, "camel")}Id`],
-      },
-    };
+    let update;
+
+    if (action === "add") {
+      update = {
+        $addToSet: {
+          [`${convertCase(refName, "camel")}List`]:
+            req.params[`${convertCase(refName, "camel")}Id`],
+        },
+      };
+    }
+
+    if (action === "remove") {
+      update = {
+        $pull: {
+          [`${convertCase(refName, "camel")}List`]:
+            req.params[`${convertCase(refName, "camel")}Id`],
+        },
+      };
+    }
 
     const updatedDoc = await Model.findOneAndUpdate(query, update, {
       new: true,
@@ -223,7 +247,7 @@ export const addReference = (Model, refName) =>
     if (!updatedDoc) {
       return next(
         new AppError(
-          "No document was found with that query, so we couldn't do the update. Apologies.",
+          `No document was found with that query, so we couldn't do the update. Apologies.`,
           404,
         ),
       );
