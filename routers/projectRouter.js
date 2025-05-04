@@ -18,6 +18,6 @@ router
   .patch(projectController.updateProject)
   .delete(projectController.deleteProject);
 
-router.route("/:projectId/:techId").patch(projectController.addTech);
+router.route("/:projectId/:techId").patch(projectController.updateTech);
 
 export default router;
