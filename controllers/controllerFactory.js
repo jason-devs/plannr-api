@@ -203,3 +203,36 @@ export const deleteAll = Model =>
       deleteCount,
     });
   });
+
+export const addReference = (Model, refName) =>
+  catchAsyncErrors(async (req, res, next) => {
+    const query = generateOneQuery(req, Model, next);
+
+    const update = {
+      $addToSet: {
+        [`${convertCase(refName, "camel")}List`]:
+          req.params[`${convertCase(refName, "camel")}Id`],
+      },
+    };
+
+    const updatedDoc = await Model.findOneAndUpdate(query, update, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updatedDoc) {
+      return next(
+        new AppError(
+          "No document was found with that query, so we couldn't do the update. Apologies.",
+          404,
+        ),
+      );
+    }
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        updatedDoc,
+      },
+    });
+  });

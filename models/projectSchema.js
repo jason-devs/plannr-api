@@ -7,7 +7,7 @@ const settings = {
   name: "project",
   parent: "user",
   isPrivate: true,
-  children: ["tech stack", "backend resource", "page", "user story"],
+  children: ["backend resource", "page", "user story"],
 };
 
 const projectSchema = new mongoose.Schema({
@@ -31,13 +31,7 @@ const projectSchema = new mongoose.Schema({
     true,
   ),
 
-  techStackList: factory.validReference(
-    settings.name,
-    "tech stack",
-    false,
-    true,
-    true,
-  ),
+  techList: factory.validReference(settings.name, "tech", false, true, true),
 
   roleList: factory.validReference(settings.name, "role", false, true, true),
 
