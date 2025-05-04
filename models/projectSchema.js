@@ -10,6 +10,31 @@ const settings = {
   children: ["backend resource", "page", "user story"],
   deleteType: "hard",
   checkCustom: false,
+  overviewSel: "name",
+  overviewPop: [],
+  fullSel: "-__v -createdAt -createdBy -slug",
+  fullPop: [
+    {
+      path: "userStoryList",
+      select: "story",
+    },
+    {
+      path: "pageList",
+      select: "name",
+    },
+    {
+      path: "backendResourceList",
+      select: "name",
+    },
+    {
+      path: "techList",
+      select: "name",
+    },
+    {
+      path: "roleList",
+      select: "name",
+    },
+  ],
 };
 
 const projectSchema = new mongoose.Schema({

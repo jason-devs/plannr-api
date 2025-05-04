@@ -79,3 +79,27 @@ export const validText = (
     },
   };
 };
+
+export const validEnum = (
+  name,
+  validArray,
+  defaultIndex = [0],
+  isRequired = true,
+) => {
+  const required = isRequired
+    ? [
+        true,
+        `Apologies, we cannot save this ${name} without a "{PATH}". Choose between ${validArray.join(" or ")}.`,
+      ]
+    : false;
+
+  return {
+    type: String,
+    enum: {
+      values: validArray,
+      message: `A ${name} {PATH} must match ${validArray.join(" or ")}, "{VALUE}" is not valid.`,
+    },
+    required,
+    default: validArray[defaultIndex],
+  };
+};

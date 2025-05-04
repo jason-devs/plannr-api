@@ -7,6 +7,19 @@ const settings = {
   isPrivate: true,
   deleteType: "hard",
   checkCustom: false,
+  overviewSel: "story position completed",
+  overviewPop: [],
+  fullSel: "-__v -createdAt -slug -createdBy",
+  fullPop: [
+    {
+      path: "project",
+      select: "name",
+    },
+    {
+      path: "role",
+      select: "name description",
+    },
+  ],
 };
 
 const userStorySchema = mongoose.Schema({
@@ -19,18 +32,7 @@ const userStorySchema = mongoose.Schema({
 
   role: factory.validReference(settings.name, "role"),
 
-  priority: {
-    type: String,
-    enum: {
-      values: ["core", "extra"],
-      message: `Priority must be either "core" or "extra", {VALUE} is not valid.`,
-    },
-    required: [
-      true,
-      `Apologies, we cannot save this user story without a priority. Choose between "core" or "extra".`,
-    ],
-    default: "core",
-  },
+  priority: factory.validEnum(settings.name, ["core", "extra"], 0, true),
 
   position: {
     type: Number,
@@ -64,11 +66,13 @@ userStorySchema.pre("save", async function (next) {
 });
 
 userStorySchema.post("findOneAndDelete", async userStory => {
-  const roleCount = await userStory.constructor.find({ role: userStory.role });
-  let query = { $pull: { userStories: userStory._id } };
-  if (roleCount.length === 0) {
+  const roleCount = await userStory.constructor.countDocuments({
+    role: userStory.role,
+  });
+  let query = { $pull: { userStoryList: userStory._id } };
+  if (roleCount === 0) {
     query = {
-      $pull: { userStories: userStory._id, roles: userStory.role },
+      $pull: { userStoryList: userStory._id, roleList: userStory.role },
     };
   }
   await mongoose.model("Project").findByIdAndUpdate(userStory.project, query);
@@ -76,8 +80,8 @@ userStorySchema.post("findOneAndDelete", async userStory => {
 
 userStorySchema.post("deleteMany", async function () {
   await mongoose.model("Project").findByIdAndUpdate(this.getQuery().project, {
-    userStories: [],
-    roles: [],
+    userStoryList: [],
+    roleList: [],
   });
 });
 
