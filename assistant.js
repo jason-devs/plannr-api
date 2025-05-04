@@ -3,6 +3,7 @@ import fs from "fs";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import models from "./models/modelRegistry.js";
+import teches from "./dev-data/teches.js";
 import { convertCase } from "./utils/helpers.js";
 import { cleanupCollection } from "./controllers/controllerFactory.js";
 
@@ -22,6 +23,7 @@ const clearResources = async () => {
     await models.TechStack.deleteMany();
     await models.Tech.deleteMany();
     await models.Role.deleteMany();
+    mongoose.disconnect();
   } catch (error) {
     console.log(error);
   }
@@ -44,6 +46,7 @@ const clearAll = async () => {
     await models.Tech.deleteMany();
     await models.Role.deleteMany();
     await models.User.deleteMany();
+    mongoose.disconnect();
   } catch (error) {
     console.log(error);
   }
@@ -59,6 +62,7 @@ const cleanup = async ref => {
     await mongoose.connect(connectionString);
     console.log(`Connection successful`);
     await cleanupCollection(models[convertCase(ref, "pascal")]);
+    mongoose.disconnect();
   } catch (error) {
     console.log(error);
   }
@@ -122,6 +126,35 @@ const writeControllerFile = function (resourceName, parentResourceName) {
   );
 };
 
+const seedTechData = async () => {
+  try {
+    const techData = teches.map(tech => ({
+      ...tech,
+      createdBy: "680f76dcbf62160ef6bab14b",
+    }));
+    dotenv.config();
+    const connectionString = process.env.DATABASE.replace(
+      "<PASSWORD>",
+      process.env.DB_PASSWORD,
+    ).replace("<USERNAME>", process.env.DB_USERNAME);
+
+    await mongoose.connect(connectionString);
+    console.log(`Connection successful`);
+
+    // Delete existing tech data first
+    await models.Tech.deleteMany();
+    console.log("Existing tech data deleted");
+
+    // Insert new tech data
+    const techs = await models.Tech.create(techData);
+    console.log(`${techs.length} technologies successfully loaded`);
+
+    mongoose.disconnect();
+  } catch (error) {
+    console.log("Error seeding tech data:", error);
+  }
+};
+
 if (process.argv[2] === "--clearResources") await clearResources();
 if (process.argv[2] === "--clearAll") await clearAll();
 
@@ -134,3 +167,5 @@ if (process.argv[2] === "--writeFiles") {
 if (process.argv[2] === "--cleanup") {
   cleanup(process.argv[3]);
 }
+
+if (process.argv[2] === "--seedTech") await seedTechData();
