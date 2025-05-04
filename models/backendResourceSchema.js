@@ -9,6 +9,10 @@ const settings = {
   isPrivate: true,
   deleteType: "hard",
   checkCustom: false,
+  overviewSel: "name",
+  overviewPop: [],
+  fullSel: "-__v -createdAt -createdBy",
+  fullPop: [],
 };
 
 const backendResourceSchema = mongoose.Schema({

@@ -119,7 +119,11 @@ export const getAll = Model =>
   catchAsyncErrors(async (req, res, next) => {
     const query = generateAllQuery(req, Model, next);
 
-    const docs = await Model.find(query);
+    const { overviewSel, overviewPop } = Model.schema.staticSettings;
+
+    const docs = await Model.find(query)
+      .populate(overviewPop)
+      .select(overviewSel);
 
     res.status(200).json({
       status: "success",
@@ -134,7 +138,9 @@ export const getOne = Model =>
   catchAsyncErrors(async (req, res, next) => {
     const query = generateOneQuery(req, Model, next);
 
-    const doc = await Model.findOne(query);
+    const { fullSel, fullPop } = Model.schema.staticSettings;
+
+    const doc = await Model.findOne(query).populate(fullPop).select(fullSel);
 
     if (!doc) {
       return next(

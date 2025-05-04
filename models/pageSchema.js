@@ -9,6 +9,10 @@ const settings = {
   isPrivate: true,
   deleteType: "hard",
   checkCustom: true,
+  overviewSel: "name",
+  overviewPop: [],
+  fullSel: "-__v -createdAt -createdBy",
+  fullPop: [],
 };
 
 const pageSchema = mongoose.Schema({

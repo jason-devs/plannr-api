@@ -8,6 +8,10 @@ const settings = {
   isPrivate: false,
   deleteType: "soft",
   checkCustom: true,
+  overviewSel: "name",
+  overviewPop: [],
+  fullSel: "-__v -createdAt -createdBy",
+  fullPop: [],
 };
 
 const techSchema = mongoose.Schema({
