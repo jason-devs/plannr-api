@@ -1,18 +1,15 @@
 import mongoose from "mongoose";
 import slugify from "slugify";
-import * as relationships from "./relationships.js";
 import * as factory from "./validatorFactory.js";
 
 const settings = {
   name: "tech",
-  parent: "tech stack",
+  parent: "none",
   isPrivate: false,
 };
 
 const techSchema = mongoose.Schema({
   name: factory.validText(settings, "title", true, ` `, true),
-
-  techStack: factory.validReference(settings.name, settings.parent),
 
   createdBy: factory.validReference(settings.name, "user"),
 
@@ -27,18 +24,6 @@ techSchema.pre("save", async function (next) {
   this.slug = slugify(this.name, { lower: true });
   this.createdAt = new Date();
   next();
-});
-
-techSchema.post("findOneAndDelete", async function (tech) {
-  await relationships.afterDeleteOne(tech);
-});
-
-techSchema.post("deleteMany", async function () {
-  await relationships.afterDeleteMany(this);
-});
-
-techSchema.post("save", async function (tech) {
-  await relationships.afterAddOne(tech);
 });
 
 export default techSchema;
