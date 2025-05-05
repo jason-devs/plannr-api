@@ -4,7 +4,9 @@ import * as factory from "./validatorFactory.js";
 const settings = {
   name: "user story",
   parent: "project",
+  privacy: "private",
   deleteType: "hard",
+  updateableRefs: ["role", "page"],
   overviewSel: "story position completed",
   overviewPop: [],
   fullSel: "-__v -createdAt -slug -createdBy",
@@ -17,37 +19,54 @@ const settings = {
       path: "role",
       select: "name description",
     },
+    {
+      path: "pageList",
+      select: "name",
+    },
   ],
 };
 
-const userStorySchema = mongoose.Schema({
-  story: factory.validText(settings, true),
+const userStorySchema = mongoose.Schema(
+  {
+    story: factory.validText(settings, true),
 
-  completed: {
-    type: Boolean,
-    default: false,
+    completed: {
+      type: Boolean,
+      default: false,
+    },
+
+    role: factory.validReference(settings.name, "role", false, false),
+
+    pageList: factory.validReference(settings.name, "page", false, true, true),
+
+    priority: factory.validEnum(settings.name, ["core", "extra"], 0, true),
+
+    position: {
+      type: Number,
+    },
+
+    project: factory.validReference(settings.name, settings.parent),
+
+    slug: factory.validSlug(settings.name),
+
+    createdBy: factory.validReference(settings.name, "user"),
+
+    createdAt: {
+      type: Date,
+    },
   },
-
-  role: factory.validReference(settings.name, "role"),
-
-  priority: factory.validEnum(settings.name, ["core", "extra"], 0, true),
-
-  position: {
-    type: Number,
+  {
+    toObject: { virtuals: true },
+    toJSON: { virtuals: true },
   },
-
-  project: factory.validReference(settings.name, settings.parent),
-
-  slug: factory.validSlug(settings.name),
-
-  createdBy: factory.validReference(settings.name, "user"),
-
-  createdAt: {
-    type: Date,
-  },
-});
+);
 
 userStorySchema.staticSettings = settings;
+
+userStorySchema.virtual("fullStory").get(function () {
+  if (!this.role) return this.story.replace("((ROLE))", "-- --");
+  return `As ${this.role.name === "admin" ? "an" : "a"} ${this.role.name} ${this.story}`;
+});
 
 userStorySchema.pre("save", async function (next) {
   const [storiesCount, role] = await Promise.all([
@@ -55,8 +74,11 @@ userStorySchema.pre("save", async function (next) {
     mongoose.model("Role").findById(this.role, { name: 1 }),
   ]);
 
+  if (this.role) {
+    this.story = this.story.replace("((ROLE))", role.name);
+  }
+
   this.position = storiesCount + 1;
-  this.story = this.story.replace("((ROLE))", role.name);
   this.createdAt = new Date();
   this.slug = `US-${this._id.toString().slice(-5)}-${Date.now().toString(36)}`;
 

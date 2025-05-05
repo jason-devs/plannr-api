@@ -15,4 +15,6 @@ router
   .patch(userStoriesController.updateUserStory)
   .delete(userStoriesController.deleteUserStory);
 
+router.route("/:userStoryId/refs").patch(userStoriesController.updateRefs);
+
 export default router;

@@ -17,6 +17,36 @@ const settings = {
 const pageSchema = mongoose.Schema({
   name: factory.validText(settings, "title", true, ` `),
 
+  afterLogIn: {
+    type: Boolean,
+    default: false,
+  },
+
+  restrictedTo: {
+    type: String,
+  },
+
+  designImage: {
+    type: String,
+  },
+
+  description: {
+    type: String,
+  },
+
+  apiEndpoints: {
+    type: [String],
+  },
+
+  navVisible: {
+    type: Boolean,
+    default: true,
+  },
+
+  dataRequired: {
+    type: [String],
+  },
+
   project: factory.validReference(settings.name, settings.parent),
 
   createdBy: factory.validReference(settings.name, "user"),
