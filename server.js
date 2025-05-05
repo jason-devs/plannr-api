@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 
 import app from "./app.js";
 
+mongoose.set("strictQuery", true);
 dotenv.config();
 
 const connectDB = async () => {

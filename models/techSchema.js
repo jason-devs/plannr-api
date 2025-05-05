@@ -6,9 +6,8 @@ import { VALIDTECHFIELDS } from "../utils/config.js";
 const settings = {
   name: "tech",
   parent: "none",
-  isPrivate: false,
+  privacy: "custom",
   deleteType: "soft",
-  checkCustom: false,
   overviewSel: "name field icon",
   overviewPop: [],
   fullSel: "-__v -createdAt -createdBy",

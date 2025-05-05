@@ -1,13 +1,64 @@
+import mongoose from "mongoose";
 import { catchAsyncErrors, convertCase } from "../utils/helpers.js";
 import AppError from "../utils/appError.js";
 
-const authorize = (req, next) => {
-  const { _id: id } = req.currentUser;
+const queryMatrix = {
+  find: {
+    admin: {
+      private: () => ({}),
+      custom: () => ({}),
+      global: () => ({}),
+    },
+    user: {
+      private: id => ({ createdBy: id }),
+      custom: id => ({ $or: [{ custom: false }, { createdBy: id }] }),
+      global: () => ({}),
+    },
+  },
 
-  if (!id) {
+  update: {
+    admin: {
+      private: () => ({}),
+      custom: () => ({}),
+      global: () => ({}),
+    },
+    user: {
+      private: id => ({ createdBy: id }),
+      custom: id => ({ createdBy: id }),
+      global: () => ({}),
+    },
+  },
+
+  delete: {
+    admin: {
+      private: () => ({}),
+      custom: () => ({}),
+      global: () => ({}),
+    },
+    user: {
+      private: id => ({ createdBy: id }),
+      custom: id => ({ createdBy: id }),
+      global: () => ({}),
+    },
+  },
+};
+
+const getCurrentUser = async (req, next, getRole = true) => {
+  const { _id: id } = req.currentUser;
+  let role = "ROLE NOT NEEDED";
+
+  if (getRole) {
+    ({ role } = await mongoose
+      .model("User")
+      .findById(id)
+      .select("-_id role")
+      .lean());
+  }
+
+  if (!id || !role) {
     return next(
       new AppError(
-        "You cannot create new documents when logged out. Try logging in first.",
+        "You cannot create or access some documents when logged out, or don't have the correct permissions. Try logging in first.",
         401,
       ),
     );
@@ -15,18 +66,17 @@ const authorize = (req, next) => {
 
   req.body.createdBy = id;
 
-  return id;
+  return { id, role };
 };
 
-const generateAllQuery = (req, Model, next) => {
-  const id = authorize(req, next);
+const generateAllQuery = async (req, Model, next, action) => {
+  const { id, role } = await getCurrentUser(req, next);
 
-  const { parent, isPrivate, checkCustom } = Model.schema.staticSettings;
+  const { parent, privacy } = Model.schema.staticSettings;
 
-  const makePrivate = isPrivate ? { createdBy: id } : {};
-  const filterCustom = checkCustom ? { custom: true } : {};
+  const restriction = queryMatrix[action][role][privacy](id);
 
-  let query = { ...makePrivate, ...filterCustom };
+  let query = { ...restriction };
 
   if (parent !== "none") {
     const parentKey =
@@ -36,8 +86,7 @@ const generateAllQuery = (req, Model, next) => {
       parent === "user" ? id : req.params[`${convertCase(parent, "camel")}Id`];
 
     query = {
-      ...makePrivate,
-      ...filterCustom,
+      ...restriction,
       [parentKey]: parentId,
     };
   }
@@ -45,17 +94,15 @@ const generateAllQuery = (req, Model, next) => {
   return query;
 };
 
-const generateOneQuery = (req, Model, next) => {
-  const id = authorize(req, next);
+const generateOneQuery = async (req, Model, next, action) => {
+  const { id, role } = await getCurrentUser(req, next);
 
-  const { name, parent, isPrivate, checkCustom } = Model.schema.staticSettings;
+  const { name, parent, privacy } = Model.schema.staticSettings;
 
-  const makePrivate = isPrivate ? { createdBy: id } : {};
-  const filterCustom = checkCustom ? { custom: true } : {};
+  const restriction = queryMatrix[action][role][privacy](id);
 
   let query = {
-    ...makePrivate,
-    ...filterCustom,
+    ...restriction,
     _id: req.params[`${convertCase(name, "camel")}Id`],
   };
 
@@ -67,8 +114,7 @@ const generateOneQuery = (req, Model, next) => {
       parent === "user" ? id : req.params[`${convertCase(parent, "camel")}Id`];
 
     query = {
-      ...makePrivate,
-      ...filterCustom,
+      ...restriction,
       [parentKey]: parentId,
       _id: req.params[`${convertCase(name, "camel")}Id`],
     };
@@ -77,9 +123,10 @@ const generateOneQuery = (req, Model, next) => {
   return query;
 };
 
-const generateBody = (req, Model, next) => {
+const generateBody = async (req, Model, next) => {
   let body;
-  authorize(req, next);
+  const { id } = await getCurrentUser(req, next, false);
+  req.body.createdBy = id;
 
   const { parent } = Model.schema.staticSettings;
 
@@ -103,7 +150,7 @@ const generateBody = (req, Model, next) => {
 
 export const createOne = Model =>
   catchAsyncErrors(async (req, res, next) => {
-    const body = generateBody(req, Model, next);
+    const body = await generateBody(req, Model, next);
 
     const newDoc = await Model.create(body);
 
@@ -117,7 +164,7 @@ export const createOne = Model =>
 
 export const getAll = Model =>
   catchAsyncErrors(async (req, res, next) => {
-    const query = generateAllQuery(req, Model, next);
+    const query = await generateAllQuery(req, Model, next, "find");
 
     const { overviewSel, overviewPop } = Model.schema.staticSettings;
 
@@ -136,7 +183,7 @@ export const getAll = Model =>
 
 export const getOne = Model =>
   catchAsyncErrors(async (req, res, next) => {
-    const query = generateOneQuery(req, Model, next);
+    const query = await generateOneQuery(req, Model, next);
 
     const { fullSel, fullPop } = Model.schema.staticSettings;
 
@@ -158,7 +205,7 @@ export const getOne = Model =>
 
 export const updateOne = Model =>
   catchAsyncErrors(async (req, res, next) => {
-    const query = generateOneQuery(req, Model, next);
+    const query = await generateOneQuery(req, Model, next);
 
     const updatedDoc = await Model.findOneAndUpdate(query, req.body, {
       new: true,
@@ -184,7 +231,7 @@ export const updateOne = Model =>
 
 export const deleteOne = Model =>
   catchAsyncErrors(async (req, res, next) => {
-    const query = generateOneQuery(req, Model, next);
+    const query = await generateOneQuery(req, Model, next);
 
     const { deleteType } = Model.schema.staticSettings;
 
@@ -218,7 +265,7 @@ export const deleteOne = Model =>
 
 export const deleteAll = Model =>
   catchAsyncErrors(async (req, res, next) => {
-    const query = generateAllQuery(req, Model, next);
+    const query = await generateAllQuery(req, Model, next);
 
     const { deleteType } = Model.schema.staticSettings;
 

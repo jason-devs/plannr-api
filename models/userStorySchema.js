@@ -4,9 +4,7 @@ import * as factory from "./validatorFactory.js";
 const settings = {
   name: "user story",
   parent: "project",
-  isPrivate: true,
   deleteType: "hard",
-  checkCustom: false,
   overviewSel: "story position completed",
   overviewPop: [],
   fullSel: "-__v -createdAt -slug -createdBy",
