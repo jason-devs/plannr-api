@@ -31,6 +31,7 @@ export const validReference = (
     validate: {
       validator: function (id) {
         if (skipNew && this.isNew) return true;
+        if (id === null) return true;
         return mongoose
           .model(convertCase(refName, "pascal"))
           .exists({ _id: id });

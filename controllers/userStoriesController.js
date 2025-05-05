@@ -12,3 +12,5 @@ export const updateUserStory = factory.updateOne(models.UserStory);
 export const deleteUserStory = factory.deleteOne(models.UserStory);
 
 export const deleteUserStories = factory.deleteAll(models.UserStory);
+
+export const updateRefs = factory.updateReference(models.UserStory);

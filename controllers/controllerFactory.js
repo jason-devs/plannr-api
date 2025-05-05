@@ -2,6 +2,38 @@ import mongoose from "mongoose";
 import { catchAsyncErrors, convertCase } from "../utils/helpers.js";
 import AppError from "../utils/appError.js";
 
+const updateRefMatrix = {
+  inArray: {
+    multiple: {
+      add: (idArray, ref) => ({
+        $addToSet: { [`${convertCase(ref, "camel")}List`]: idArray },
+      }),
+
+      remove: (idArray, ref) => ({
+        $pull: { [`${convertCase(ref, "camel")}List`]: { $in: idArray } },
+      }),
+    },
+
+    single: {
+      add: (id, ref) => ({
+        $addToSet: { [`${convertCase(ref, "camel")}List`]: id },
+      }),
+      remove: (id, ref) => ({
+        $pull: { [`${convertCase(ref, "camel")}List`]: id },
+      }),
+    },
+  },
+
+  notInArray: {
+    single: {
+      add: (id, ref) => ({ $set: { [`${convertCase(ref, "camel")}`]: id } }),
+      remove: (_, ref) => ({
+        [`${convertCase(ref, "camel")}`]: null,
+      }),
+    },
+  },
+};
+
 const queryMatrix = {
   find: {
     admin: {
@@ -183,7 +215,7 @@ export const getAll = Model =>
 
 export const getOne = Model =>
   catchAsyncErrors(async (req, res, next) => {
-    const query = await generateOneQuery(req, Model, next);
+    const query = await generateOneQuery(req, Model, next, "find");
 
     const { fullSel, fullPop } = Model.schema.staticSettings;
 
@@ -205,7 +237,7 @@ export const getOne = Model =>
 
 export const updateOne = Model =>
   catchAsyncErrors(async (req, res, next) => {
-    const query = await generateOneQuery(req, Model, next);
+    const query = await generateOneQuery(req, Model, next, "update");
 
     const updatedDoc = await Model.findOneAndUpdate(query, req.body, {
       new: true,
@@ -231,7 +263,7 @@ export const updateOne = Model =>
 
 export const deleteOne = Model =>
   catchAsyncErrors(async (req, res, next) => {
-    const query = await generateOneQuery(req, Model, next);
+    const query = await generateOneQuery(req, Model, next, "delete");
 
     const { deleteType } = Model.schema.staticSettings;
 
@@ -265,7 +297,7 @@ export const deleteOne = Model =>
 
 export const deleteAll = Model =>
   catchAsyncErrors(async (req, res, next) => {
-    const query = await generateAllQuery(req, Model, next);
+    const query = await generateAllQuery(req, Model, next, "delete");
 
     const { deleteType } = Model.schema.staticSettings;
 
@@ -285,45 +317,60 @@ export const deleteAll = Model =>
     });
   });
 
-export const updateReference = (Model, refName) =>
+export const updateReference = Model =>
   catchAsyncErrors(async (req, res, next) => {
-    const { action } = req.query;
+    const { updateableRefs, fullSel, fullPop } = Model.schema.staticSettings;
+    const { action, ref, array, id } = req.body;
 
-    if (!action || !["add", "remove"].includes(action)) {
+    const multiple = Array.isArray(id) ? "multiple" : "single";
+    const inArray = array ? "inArray" : "notInArray";
+
+    if (!updateableRefs.includes(ref)) {
       return next(
         new AppError(
-          `Cannot perform this action without a valid action query, your options are "action=add" OR "action=remove"`,
+          `Cannot perform this action because you cannot update the "${ref}" on this document. You can update ${updateableRefs.join(" OR ")}`,
           400,
         ),
       );
     }
 
-    const query = generateOneQuery(req, Model, next);
-
-    let update;
-
-    if (action === "add") {
-      update = {
-        $addToSet: {
-          [`${convertCase(refName, "camel")}List`]:
-            req.params[`${convertCase(refName, "camel")}Id`],
-        },
-      };
+    if (!action || !["add", "remove"].includes(action)) {
+      return next(
+        new AppError(
+          `Cannot perform this action without a valid action, your options are "action": "add" OR "action": "remove"`,
+          400,
+        ),
+      );
     }
 
-    if (action === "remove") {
-      update = {
-        $pull: {
-          [`${convertCase(refName, "camel")}List`]:
-            req.params[`${convertCase(refName, "camel")}Id`],
-        },
-      };
+    if (!ref) {
+      return next(
+        new AppError(
+          `Cannot perform this action without a valid ref, your options are `,
+          400,
+        ),
+      );
     }
+
+    if (array === undefined) {
+      return next(
+        new AppError(
+          `Cannot perform this action without a valid "array" property, your options are true, or false and you're telling us if this property is STORED as an array in the document.`,
+          400,
+        ),
+      );
+    }
+
+    const query = await generateOneQuery(req, Model, next, "update");
+
+    const update = updateRefMatrix[inArray][multiple][action](id, ref);
 
     const updatedDoc = await Model.findOneAndUpdate(query, update, {
       new: true,
       runValidators: true,
-    });
+    })
+      .populate(fullPop)
+      .select(fullSel);
 
     if (!updatedDoc) {
       return next(

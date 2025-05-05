@@ -33,6 +33,11 @@ const techSchema = mongoose.Schema({
     type: String,
   },
 
+  // commonTechStackList: {
+  //   type: [mongoose.Schema.ObjectId],
+  //   ref: "CommonTechStack",
+  // },
+
   openSource: {
     type: Boolean,
   },
