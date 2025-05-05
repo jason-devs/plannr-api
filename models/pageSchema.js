@@ -6,9 +6,8 @@ import * as factory from "./validatorFactory.js";
 const settings = {
   name: "page",
   parent: "project",
-  isPrivate: true,
+  privacy: "private",
   deleteType: "hard",
-  checkCustom: true,
   overviewSel: "name",
   overviewPop: [],
   fullSel: "-__v -createdAt -createdBy",

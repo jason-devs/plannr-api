@@ -6,9 +6,8 @@ import * as relationships from "./relationships.js";
 const settings = {
   name: "backend resource",
   parent: "project",
-  isPrivate: true,
+  privacy: "private",
   deleteType: "hard",
-  checkCustom: false,
   overviewSel: "name",
   overviewPop: [],
   fullSel: "-__v -createdAt -createdBy",

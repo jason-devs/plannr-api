@@ -5,9 +5,8 @@ import * as factory from "./validatorFactory.js";
 const settings = {
   name: "role",
   parent: "none",
-  isPrivate: false,
+  privacy: "custom",
   deleteType: "soft",
-  checkCustom: true,
   overviewSel: "name",
   overviewPop: [],
   fullSel: "-__v -createdAt -createdBy",
