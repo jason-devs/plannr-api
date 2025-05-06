@@ -1,14 +1,12 @@
 import mongoose from "mongoose";
-import slugify from "slugify";
 import * as relationships from "./relationships.js";
 import * as factory from "./validatorFactory.js";
 
 export const settings = {
   parent: "%%PARENTNAME%%",
   name: "%%NAME%%",
-  isPrivate: false,
+  privacy: "private",
   deleteType: "hard",
-  checkCustom: false,
   overviewSel: "name",
   overviewPop: [],
   fullSel: "-__v -createdAt -createdBy",
@@ -59,7 +57,7 @@ NOTE: Add the following to modelRegistry.js:
 
   import %%VARIABLENAME%%Schema from "./%%VARIABLENAME%%Schema.js"
   
-  %%MODELNAME%%: mongoose.model("%%MODELNAME%%", roleSchema),
+  %%MODELNAME%%: mongoose.model("%%MODELNAME%%", %%VARIABLENAME%%Schema),
 
 NOTE: And don't forget to add me to any DELETE logic in %%PARENTVARIABLENAME%%Schema.js
 
