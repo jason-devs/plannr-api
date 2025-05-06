@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import * as factory from "./validatorFactory.js";
+import * as relationships from "./relationships.js";
 
 const settings = {
   name: "user story",
@@ -80,30 +81,15 @@ userStorySchema.pre("save", async function (next) {
 });
 
 userStorySchema.post("findOneAndDelete", async userStory => {
-  const roleCount = await userStory.constructor.countDocuments({
-    role: userStory.role,
-  });
-  let query = { $pull: { userStoryList: userStory._id } };
-  if (roleCount === 0) {
-    query = {
-      $pull: { userStoryList: userStory._id, roleList: userStory.role },
-    };
-  }
-  await mongoose.model("Project").findByIdAndUpdate(userStory.project, query);
+  await relationships.afterDeleteOne(userStory);
 });
 
 userStorySchema.post("deleteMany", async function () {
-  await mongoose.model("Project").findByIdAndUpdate(this.getQuery().project, {
-    userStoryList: [],
-    roleList: [],
-  });
+  await relationships.afterDeleteMany(this);
 });
 
 userStorySchema.post("save", async userStory => {
-  await mongoose.model("Project").findByIdAndUpdate(userStory.project, {
-    $push: { userStoryList: userStory._id },
-    $addToSet: { roleList: userStory.role },
-  });
+  await relationships.afterAddOne(userStory);
 });
 
 export default userStorySchema;

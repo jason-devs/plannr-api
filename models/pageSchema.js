@@ -6,12 +6,24 @@ import * as factory from "./validatorFactory.js";
 const settings = {
   name: "page",
   parent: "project",
+  subDoc: "frontend",
   privacy: "private",
   deleteType: "hard",
   overviewSel: "name",
-  overviewPop: [],
+  overviewPop: [
+    {
+      path: "userStoryList",
+      select: "fullStory",
+    },
+  ],
   fullSel: "-__v -createdAt -createdBy",
-  fullPop: [],
+  fullPop: [
+    {
+      path: "userStoryList",
+      select: "fullStory story role",
+      populate: "role",
+    },
+  ],
 };
 
 const pageSchema = mongoose.Schema({
@@ -20,10 +32,6 @@ const pageSchema = mongoose.Schema({
   afterLogIn: {
     type: Boolean,
     default: false,
-  },
-
-  restrictedTo: {
-    type: String,
   },
 
   designImageMobile: {
@@ -51,9 +59,13 @@ const pageSchema = mongoose.Schema({
     default: true,
   },
 
-  dataRequired: {
-    type: [String],
-  },
+  dataModelList: factory.validReference(
+    settings.name,
+    "data model",
+    false,
+    true,
+    true,
+  ),
 
   userStoryList: factory.validReference(
     settings.name,
@@ -73,6 +85,12 @@ const pageSchema = mongoose.Schema({
 });
 
 pageSchema.staticSettings = settings;
+
+pageSchema.virtual("roles").get(function () {
+  const stories = this.userStoryList;
+  const roles = new Set(stories.map(story => story.role.name));
+  return [...roles];
+});
 
 pageSchema.pre("save", async function (next) {
   this.slug = slugify(this.name, { lower: true });

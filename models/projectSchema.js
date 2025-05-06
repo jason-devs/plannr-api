@@ -44,12 +44,6 @@ const projectSchema = new mongoose.Schema(
 
 projectSchema.staticSettings = settings;
 
-// projectSchema.virtual("roles").get(function () {
-//   const stories = this.userStoryList;
-//   const roles = new Set(stories.map(story => story.role.name));
-//   return [...roles];
-// });
-
 projectSchema.pre("save", function (next) {
   if (!this.frontend) this.frontend = {};
   if (!this.backend) this.backend = {};

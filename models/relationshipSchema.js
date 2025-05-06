@@ -16,7 +16,7 @@ export const settings = {
       select: "name",
     },
   ],
-}
+};
 
 const relationshipSchema = mongoose.Schema({
   name: factory.validText(settings, "title", true, ` `, true),
