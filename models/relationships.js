@@ -3,9 +3,11 @@ import * as config from "../utils/config.js";
 import { convertCase } from "../utils/helpers.js";
 
 const generateParentInfoDoc = doc => {
-  const { name, parent } = doc.constructor.schema.staticSettings;
+  const { name, parent, subDoc } = doc.constructor.schema.staticSettings;
   const parentModel = mongoose.model(convertCase(parent, "pascal"));
-  const parentPath = `${convertCase(name, "camel")}List`;
+  const parentPath = subDoc
+    ? `${convertCase(subDoc, "camel")}.${convertCase(name, "camel")}List`
+    : `${convertCase(name, "camel")}List`;
   const parentId =
     parent === "user" ? doc.createdBy : doc[convertCase(parent, "camel")];
 
@@ -13,10 +15,12 @@ const generateParentInfoDoc = doc => {
 };
 
 const generateParentInfoThat = that => {
-  const { name, parent } = that.schema.staticSettings;
+  const { name, parent, subDoc } = that.schema.staticSettings;
   const query = that.getQuery();
   const parentModel = mongoose.model(convertCase(parent, "pascal"));
-  const parentPath = `${convertCase(name, "camel")}List`;
+  const parentPath = subDoc
+    ? `${convertCase(subDoc, "camel")}.${convertCase(name, "camel")}List`
+    : `${convertCase(name, "camel")}List`;
   const parentId =
     parent === "user" ? query.createdBy : query[convertCase(parent, "camel")];
 
