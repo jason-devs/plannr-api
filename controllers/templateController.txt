@@ -12,3 +12,5 @@ export const update%%MODELNAME%% = factory.updateOne(models.%%MODELNAME%%);
 export const delete%%MODELNAME%% = factory.deleteOne(models.%%MODELNAME%%);
 
 export const delete%%MODELNAME%%s = factory.deleteAll(models.%%MODELNAME%%);
+
+export const updateRefs = factory.updateReference(models.%%MODELNAME%%);

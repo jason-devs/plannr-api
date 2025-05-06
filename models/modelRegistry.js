@@ -7,6 +7,7 @@ import backendResourceSchema from "./backendResourceSchema.js";
 import techSchema from "./techSchema.js";
 import apiKeySchema from "./apiKeySchema.js";
 import pageSchema from "./pageSchema.js";
+import componentSchema from "./componentSchema.js";
 
 const models = {
   User: mongoose.model("User", userSchema),
@@ -17,6 +18,7 @@ const models = {
   Tech: mongoose.model("Tech", techSchema),
   Page: mongoose.model("Page", pageSchema),
   ApiKey: mongoose.model("ApiKey", apiKeySchema),
+  Component: mongoose.model("Component", componentSchema),
 };
 
 export default models;
