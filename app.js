@@ -15,6 +15,7 @@ import backendResourceRouter from "./routers/backendResourceRouter.js";
 import roleRouter from "./routers/roleRouter.js";
 import techRouter from "./routers/techRouter.js";
 import componentRouter from "./routers/componentRouter.js";
+import dataModelRouter from "./routers/dataModelRouter.js";
 import globalErrorHandler from "./controllers/errorController.js";
 import AppError from "./utils/appError.js";
 
@@ -55,6 +56,7 @@ app.use(`/api/v1/tech`, techRouter);
 projectRouter.use("/:projectId/page", pageRouter);
 projectRouter.use("/:projectId/component", componentRouter);
 projectRouter.use("/:projectId/backend-resource", backendResourceRouter);
+projectRouter.use("/:projectId/data-model", dataModelRouter);
 
 app.all("*", (req, res, next) => {
   const error = new AppError(

@@ -10,6 +10,7 @@ import pageSchema from "./pageSchema.js";
 import componentSchema from "./componentSchema.js";
 import backendSchema from "./backendSchema.js";
 import frontendSchema from "./frontendSchema.js";
+import dataModelSchema from "./dataModelSchema.js";
 
 const models = {
   User: mongoose.model("User", userSchema),
@@ -23,6 +24,7 @@ const models = {
   Component: mongoose.model("Component", componentSchema),
   Frontend: mongoose.model("Frontend", frontendSchema),
   Backend: mongoose.model("Backend", backendSchema),
+  DataModel: mongoose.model("DataModel", dataModelSchema),
 };
 
 export default models;

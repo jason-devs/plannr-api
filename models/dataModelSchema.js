@@ -8,6 +8,7 @@ export const settings = {
   privacy: "private",
   deleteType: "hard",
   overviewSel: "name",
+  subDoc: "backend",
   overviewPop: [],
   fullSel: "-__v -createdAt -createdBy",
   fullPop: [
@@ -16,7 +17,7 @@ export const settings = {
       select: "name",
     },
   ],
-}
+};
 
 const dataModelSchema = mongoose.Schema({
   name: factory.validText(settings, "title", true, ` `, true),

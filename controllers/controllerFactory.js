@@ -429,10 +429,12 @@ export const updateReference = Model =>
     const multiple = Array.isArray(id) ? "multiple" : "single";
     const inArray = array ? "inArray" : "notInArray";
 
-    if (!updateableRefs.includes(ref)) {
+    if (!updateableRefs || !updateableRefs.includes(ref)) {
       return next(
         new AppError(
-          `Cannot perform this action because you cannot update the "${ref}" on this document. You can update ${updateableRefs.join(" OR ")}`,
+          updateableRefs
+            ? `Cannot perform this action because you cannot update the "${ref}" on this document. You can update ${updateableRefs.join(" OR ")}`
+            : `Updateable refs were not provieded for ${name}. Please address.`,
           400,
         ),
       );
