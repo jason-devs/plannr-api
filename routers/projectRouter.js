@@ -1,6 +1,8 @@
 import express from "express";
 import * as authController from "../controllers/authController.js";
 import * as projectController from "../controllers/projectController.js";
+import frontendRouter from "./frontendRouter.js";
+import backendRouter from "./backendRouter.js";
 
 const router = express.Router();
 
@@ -18,6 +20,7 @@ router
   .patch(projectController.updateProject)
   .delete(projectController.deleteProject);
 
-router.route("/:projectId/:techId").patch(projectController.updateTech);
+router.use("/:projectId/front-end", frontendRouter);
+router.use("/:projectId/back-end", backendRouter);
 
 export default router;

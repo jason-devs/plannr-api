@@ -10,7 +10,6 @@ import cookieParser from "cookie-parser";
 import authRouter from "./routers/authRouter.js";
 import userRouter from "./routers/userRouter.js";
 import projectRouter from "./routers/projectRouter.js";
-import userStoriesRouter from "./routers/userStoriesRouter.js";
 import pageRouter from "./routers/pageRouter.js";
 import backendResourceRouter from "./routers/backendResourceRouter.js";
 import roleRouter from "./routers/roleRouter.js";
@@ -52,8 +51,7 @@ app.use(`/api/v1/project`, projectRouter);
 app.use(`/api/v1/role`, roleRouter);
 app.use(`/api/v1/tech`, techRouter);
 
-//NOTE: Nested routes:
-projectRouter.use("/:projectId/user-stories", userStoriesRouter);
+//NOTE: Nested in /project:
 projectRouter.use("/:projectId/page", pageRouter);
 projectRouter.use("/:projectId/backend-resource", backendResourceRouter);
 projectRouter.use("/:projectId/component", componentRouter);

@@ -1,7 +1,10 @@
 import express from "express";
 import * as pageController from "../controllers/pageController.js";
+import userStoryRouter from "./userStoryRouter.js";
 
 const router = express.Router({ mergeParams: true });
+
+router.use("/:pageId/user-story", userStoryRouter);
 
 router
   .route("/")

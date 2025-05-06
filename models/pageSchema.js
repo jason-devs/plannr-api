@@ -26,7 +26,15 @@ const pageSchema = mongoose.Schema({
     type: String,
   },
 
-  designImage: {
+  designImageMobile: {
+    type: String,
+  },
+
+  designImageTablet: {
+    type: String,
+  },
+
+  designImageDesktop: {
     type: String,
   },
 
@@ -46,6 +54,14 @@ const pageSchema = mongoose.Schema({
   dataRequired: {
     type: [String],
   },
+
+  userStoryList: factory.validReference(
+    settings.name,
+    "user story",
+    false,
+    true,
+    true,
+  ),
 
   project: factory.validReference(settings.name, settings.parent),
 
