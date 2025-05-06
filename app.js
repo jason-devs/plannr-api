@@ -53,8 +53,8 @@ app.use(`/api/v1/tech`, techRouter);
 
 //NOTE: Nested in /project:
 projectRouter.use("/:projectId/page", pageRouter);
-projectRouter.use("/:projectId/backend-resource", backendResourceRouter);
 projectRouter.use("/:projectId/component", componentRouter);
+projectRouter.use("/:projectId/backend-resource", backendResourceRouter);
 
 app.all("*", (req, res, next) => {
   const error = new AppError(
