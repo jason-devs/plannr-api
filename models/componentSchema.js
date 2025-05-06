@@ -6,6 +6,7 @@ export const settings = {
   parent: "project",
   name: "component",
   privacy: "private",
+  subDoc: "frontend",
   deleteType: "hard",
   overviewSel: "name",
   overviewPop: [],
