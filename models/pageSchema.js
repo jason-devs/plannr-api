@@ -75,6 +75,14 @@ const pageSchema = mongoose.Schema({
     true,
   ),
 
+  sectionList: factory.validReference(
+    settings.name,
+    "section",
+    false,
+    true,
+    true,
+  ),
+
   project: factory.validReference(settings.name, settings.parent),
 
   createdBy: factory.validReference(settings.name, "user"),

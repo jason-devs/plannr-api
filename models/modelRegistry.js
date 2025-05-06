@@ -11,6 +11,7 @@ import componentSchema from "./componentSchema.js";
 import backendSchema from "./backendSchema.js";
 import frontendSchema from "./frontendSchema.js";
 import dataModelSchema from "./dataModelSchema.js";
+import sectionSchema from "./sectionSchema.js";
 
 const models = {
   User: mongoose.model("User", userSchema),
@@ -25,6 +26,7 @@ const models = {
   Frontend: mongoose.model("Frontend", frontendSchema),
   Backend: mongoose.model("Backend", backendSchema),
   DataModel: mongoose.model("DataModel", dataModelSchema),
+  Section: mongoose.model("Section", sectionSchema),
 };
 
 export default models;

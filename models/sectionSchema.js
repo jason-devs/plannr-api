@@ -3,25 +3,20 @@ import * as relationships from "./relationships.js";
 import * as factory from "./validatorFactory.js";
 
 export const settings = {
-  parent: "project",
+  parent: "page",
   name: "section",
   privacy: "private",
   deleteType: "hard",
   overviewSel: "name",
   overviewPop: [],
   fullSel: "-__v -createdAt -createdBy",
-  fullPop: [
-    {
-      path: "project",
-      select: "name",
-    },
-  ],
-}
+  fullPop: [],
+};
 
 const sectionSchema = mongoose.Schema({
   name: factory.validText(settings, "title", true, ` `, true),
 
-  project: factory.validReference(settings.name, settings.parent),
+  page: factory.validReference(settings.name, settings.parent),
 
   createdBy: factory.validReference(settings.name, "user"),
 
