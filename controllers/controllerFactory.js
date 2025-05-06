@@ -3,33 +3,87 @@ import { catchAsyncErrors, convertCase } from "../utils/helpers.js";
 import AppError from "../utils/appError.js";
 
 const updateRefMatrix = {
-  inArray: {
-    multiple: {
-      add: (idArray, ref) => ({
-        $addToSet: { [`${convertCase(ref, "camel")}List`]: idArray },
-      }),
+  embedded: {
+    inArray: {
+      multiple: {
+        add: ({ id, ref, childRef }) => ({
+          $addToSet: {
+            [`${convertCase(childRef, "camel")}.${convertCase(ref, "camel")}List`]:
+              id,
+          },
+        }),
 
-      remove: (idArray, ref) => ({
-        $pull: { [`${convertCase(ref, "camel")}List`]: { $in: idArray } },
-      }),
+        remove: ({ id, ref, childRef }) => ({
+          $pull: {
+            [`${convertCase(childRef, "camel")}.${convertCase(ref, "camel")}List`]:
+              { $in: id },
+          },
+        }),
+      },
+
+      single: {
+        add: ({ id, ref, childRef }) => ({
+          $addToSet: {
+            [`${convertCase(childRef, "camel")}.${convertCase(ref, "camel")}List`]:
+              id,
+          },
+        }),
+        remove: ({ id, ref, childRef }) => ({
+          $pull: {
+            [`${convertCase(childRef, "camel")}.${convertCase(ref, "camel")}List`]:
+              id,
+          },
+        }),
+      },
     },
 
-    single: {
-      add: (id, ref) => ({
-        $addToSet: { [`${convertCase(ref, "camel")}List`]: id },
-      }),
-      remove: (id, ref) => ({
-        $pull: { [`${convertCase(ref, "camel")}List`]: id },
-      }),
+    notInArray: {
+      single: {
+        add: ({ id, ref, childRef }) => ({
+          $set: {
+            [`${convertCase(childRef, "camel")}.${convertCase(ref, "camel")}List`]:
+              id,
+          },
+        }),
+        remove: ({ ref, childRef }) => ({
+          [`${convertCase(childRef, "camel")}.${convertCase(ref, "camel")}List`]:
+            null,
+        }),
+      },
     },
   },
 
-  notInArray: {
-    single: {
-      add: (id, ref) => ({ $set: { [`${convertCase(ref, "camel")}`]: id } }),
-      remove: (_, ref) => ({
-        [`${convertCase(ref, "camel")}`]: null,
-      }),
+  notEmbedded: {
+    inArray: {
+      multiple: {
+        add: ({ id, ref }) => ({
+          $addToSet: { [`${convertCase(ref, "camel")}List`]: id },
+        }),
+
+        remove: ({ id, ref }) => ({
+          $pull: { [`${convertCase(ref, "camel")}List`]: { $in: id } },
+        }),
+      },
+
+      single: {
+        add: ({ id, ref }) => ({
+          $addToSet: { [`${convertCase(ref, "camel")}List`]: id },
+        }),
+        remove: ({ id, ref }) => ({
+          $pull: { [`${convertCase(ref, "camel")}List`]: id },
+        }),
+      },
+    },
+
+    notInArray: {
+      single: {
+        add: ({ id, ref }) => ({
+          $set: { [`${convertCase(ref, "camel")}`]: id },
+        }),
+        remove: ({ ref }) => ({
+          [`${convertCase(ref, "camel")}`]: null,
+        }),
+      },
     },
   },
 };
@@ -129,7 +183,7 @@ const generateAllQuery = async (req, Model, next, action) => {
 const generateOneQuery = async (req, Model, next, action) => {
   const { id, role } = await getCurrentUser(req, next);
 
-  const { name, parent, privacy } = Model.schema.staticSettings;
+  const { name, parent, privacy, embedded } = Model.schema.staticSettings;
 
   const restriction = queryMatrix[action][role][privacy](id);
 
@@ -138,7 +192,7 @@ const generateOneQuery = async (req, Model, next, action) => {
     _id: req.params[`${convertCase(name, "camel")}Id`],
   };
 
-  if (parent !== "none") {
+  if (parent !== "none" && !embedded) {
     const parentKey =
       parent === "user" ? "createdBy" : convertCase(parent, "camel");
 
@@ -149,6 +203,13 @@ const generateOneQuery = async (req, Model, next, action) => {
       ...restriction,
       [parentKey]: parentId,
       _id: req.params[`${convertCase(name, "camel")}Id`],
+    };
+  }
+
+  if (embedded) {
+    query = {
+      ...restriction,
+      _id: req.params[`${convertCase(parent, "camel")}Id`],
     };
   }
 
@@ -184,7 +245,13 @@ export const createOne = Model =>
   catchAsyncErrors(async (req, res, next) => {
     const body = await generateBody(req, Model, next);
 
-    const newDoc = await Model.create(body);
+    const { fullSel, fullPop } = Model.schema.staticSettings;
+
+    const newDocUnpop = await Model.create(body);
+
+    const newDoc = await Model.findById(newDocUnpop._id)
+      .populate(fullPop)
+      .select(fullSel);
 
     res.status(201).json({
       status: "success",
@@ -224,6 +291,33 @@ export const getOne = Model =>
     if (!doc) {
       return next(
         new AppError("No document was found with that query. Apologies.", 404),
+      );
+    }
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        doc,
+      },
+    });
+  });
+
+export const getOneEmbedded = Model =>
+  catchAsyncErrors(async (req, res, next) => {
+    const { name, parent } = Model.schema.staticSettings;
+
+    const parentDoc = await mongoose
+      .model(convertCase(parent, "pascal"))
+      .findById(req.params[`${convertCase(parent, "camel")}Id`]);
+
+    const doc = parentDoc[convertCase(name, "camel")];
+
+    if (!doc) {
+      return next(
+        new AppError(
+          "No embedded document was found with that query. Apologies.",
+          404,
+        ),
       );
     }
 
@@ -319,9 +413,19 @@ export const deleteAll = Model =>
 
 export const updateReference = Model =>
   catchAsyncErrors(async (req, res, next) => {
-    const { updateableRefs, fullSel, fullPop } = Model.schema.staticSettings;
+    const {
+      name,
+      parent,
+      updateableRefs,
+      fullSel,
+      fullPop,
+      embedded = false,
+    } = Model.schema.staticSettings;
+
     const { action, ref, array, id } = req.body;
 
+    const childRef = embedded ? name : "UNUSED";
+    const isEmbedded = embedded ? "embedded" : "notEmbedded";
     const multiple = Array.isArray(id) ? "multiple" : "single";
     const inArray = array ? "inArray" : "notInArray";
 
@@ -363,14 +467,32 @@ export const updateReference = Model =>
 
     const query = await generateOneQuery(req, Model, next, "update");
 
-    const update = updateRefMatrix[inArray][multiple][action](id, ref);
+    const update = updateRefMatrix[isEmbedded][inArray][multiple][action]({
+      id,
+      ref,
+      childRef,
+    });
 
-    const updatedDoc = await Model.findOneAndUpdate(query, update, {
-      new: true,
-      runValidators: true,
-    })
-      .populate(fullPop)
-      .select(fullSel);
+    let updatedDoc;
+    if (embedded) {
+      updatedDoc = await mongoose
+        .model(convertCase(parent, "pascal"))
+        .findOneAndUpdate(query, update, {
+          new: true,
+          runValidators: true,
+        })
+        .populate(fullPop)
+        .select(fullSel);
+    }
+
+    if (!embedded) {
+      updatedDoc = await Model.findOneAndUpdate(query, update, {
+        new: true,
+        runValidators: true,
+      })
+        .populate(fullPop)
+        .select(fullSel);
+    }
 
     if (!updatedDoc) {
       return next(

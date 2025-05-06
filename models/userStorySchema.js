@@ -3,7 +3,7 @@ import * as factory from "./validatorFactory.js";
 
 const settings = {
   name: "user story",
-  parent: "project",
+  parent: "page",
   privacy: "private",
   deleteType: "hard",
   updateableRefs: ["role", "page"],
@@ -12,15 +12,11 @@ const settings = {
   fullSel: "-__v -createdAt -slug -createdBy",
   fullPop: [
     {
-      path: "project",
-      select: "name",
-    },
-    {
       path: "role",
       select: "name description",
     },
     {
-      path: "pageList",
+      path: "page",
       select: "name",
     },
   ],
@@ -37,15 +33,19 @@ const userStorySchema = mongoose.Schema(
 
     role: factory.validReference(settings.name, "role", false, false),
 
-    pageList: factory.validReference(settings.name, "page", false, true, true),
+    page: factory.validReference(
+      settings.name,
+      settings.parent,
+      true,
+      false,
+      false,
+    ),
 
     priority: factory.validEnum(settings.name, ["core", "extra"], 0, true),
 
     position: {
       type: Number,
     },
-
-    project: factory.validReference(settings.name, settings.parent),
 
     slug: factory.validSlug(settings.name),
 
@@ -69,15 +69,9 @@ userStorySchema.virtual("fullStory").get(function () {
 });
 
 userStorySchema.pre("save", async function (next) {
-  const [storiesCount, role] = await Promise.all([
-    this.constructor.countDocuments({ project: this.project }),
-    mongoose.model("Role").findById(this.role, { name: 1 }),
-  ]);
-
-  if (this.role) {
-    this.story = this.story.replace("((ROLE))", role.name);
-  }
-
+  const storiesCount = await this.constructor.countDocuments({
+    project: this.project,
+  });
   this.position = storiesCount + 1;
   this.createdAt = new Date();
   this.slug = `US-${this._id.toString().slice(-5)}-${Date.now().toString(36)}`;
