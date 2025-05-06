@@ -7,6 +7,7 @@ export const settings = {
   name: "backend",
   privacy: "private",
   embedded: true,
+  updateableRefs: ["tech", "data model", "backend resource"],
   deleteType: "hard",
   overviewSel: "name",
   overviewPop: [],
