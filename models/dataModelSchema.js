@@ -1,28 +1,19 @@
 import mongoose from "mongoose";
-import * as relationships from "./relationships.js";
 import * as factory from "./validatorFactory.js";
+import Settings from "./Settings.js";
 
-export const settings = {
-  parent: "project",
+export const settings = new Settings({
   name: "data model",
-  privacy: "private",
-  deleteType: "hard",
-  overviewSel: "name",
-  subDoc: "backend",
-  overviewPop: [],
-  fullSel: "-__v -createdAt -createdBy",
-  fullPop: [
-    {
-      path: "project",
-      select: "name",
-    },
-  ],
-};
+});
 
 const dataModelSchema = mongoose.Schema({
   name: factory.validText(settings, "title", true, ` `, true),
 
-  project: factory.validReference(settings.name, settings.parent),
+  //NOTE: References:
+
+  project: factory.validReference(settings.name, "project"),
+
+  //NOTE: Operational:
 
   createdBy: factory.validReference(settings.name, "user"),
 
@@ -36,18 +27,6 @@ dataModelSchema.staticSettings = settings;
 dataModelSchema.pre("save", async function (next) {
   this.createdAt = new Date();
   next();
-});
-
-dataModelSchema.post("findOneAndDelete", async function (dataModel) {
-  await relationships.afterDeleteOne(dataModel);
-});
-
-dataModelSchema.post("deleteMany", async function () {
-  await relationships.afterDeleteMany(this);
-});
-
-dataModelSchema.post("save", async function (dataModel) {
-  await relationships.afterAddOne(dataModel);
 });
 
 export default dataModelSchema;

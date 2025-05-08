@@ -15,8 +15,6 @@ router
   .patch(dataModelController.updateDataModel)
   .delete(dataModelController.deleteDataModel);
 
-router.route("/:dataModelId/refs").patch(dataModelController.updateRefs);
-
 export default router;
 
 /*

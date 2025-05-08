@@ -1,23 +1,19 @@
 import mongoose from "mongoose";
-import slugify from "slugify";
 import * as factory from "./validatorFactory.js";
-import * as relationships from "./relationships.js";
+import Settings from "./Settings.js";
 
-const settings = {
+const settings = new Settings({
   name: "backend resource",
-  parent: "project",
-  privacy: "private",
-  deleteType: "hard",
-  overviewSel: "name",
-  overviewPop: [],
-  fullSel: "-__v -createdAt -createdBy",
-  fullPop: [],
-};
+});
 
 const backendResourceSchema = mongoose.Schema({
   name: factory.validText(settings, "title", true, ` `),
 
-  project: factory.validReference(settings.name, settings.parent),
+  //NOTE: References:
+
+  project: factory.validReference(settings.name, "project"),
+
+  //NOTE: Operational:
 
   createdBy: factory.validReference(settings.name, "user"),
 
@@ -29,24 +25,8 @@ const backendResourceSchema = mongoose.Schema({
 backendResourceSchema.staticSettings = settings;
 
 backendResourceSchema.pre("save", async function (next) {
-  this.slug = slugify(this.name, { lower: true });
   this.createdAt = new Date();
   next();
-});
-
-backendResourceSchema.post(
-  "findOneAndDelete",
-  async function (backendResource) {
-    await relationships.afterDeleteOne(backendResource);
-  },
-);
-
-backendResourceSchema.post("deleteMany", async function () {
-  await relationships.afterDeleteMany(this);
-});
-
-backendResourceSchema.post("save", async function (backendResource) {
-  await relationships.afterAddOne(backendResource);
 });
 
 export default backendResourceSchema;

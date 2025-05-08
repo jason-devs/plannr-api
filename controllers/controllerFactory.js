@@ -1,94 +1,33 @@
 import mongoose from "mongoose";
-import { catchAsyncErrors, convertCase } from "../utils/helpers.js";
 import AppError from "../utils/appError.js";
+import APIFeatures from "../utils/apiFeatures.js";
+import { catchAsyncErrors, convertCase } from "../utils/helpers.js";
 
-const updateRefMatrix = {
-  embedded: {
-    inArray: {
-      multiple: {
-        add: ({ id, ref, childRef }) => ({
-          $addToSet: {
-            [`${convertCase(childRef, "camel")}.${convertCase(ref, "camel")}List`]:
-              id,
-          },
-        }),
+const getCurrentUser = async (req, next, getRole = true) => {
+  const { _id: id } = req.currentUser;
+  let role = "ROLE NOT NEEDED";
 
-        remove: ({ id, ref, childRef }) => ({
-          $pull: {
-            [`${convertCase(childRef, "camel")}.${convertCase(ref, "camel")}List`]:
-              { $in: id },
-          },
-        }),
-      },
+  if (getRole) {
+    ({ role } = await mongoose
+      .model("User")
+      .findById(id)
+      .select("-_id role")
+      .lean());
+  }
 
-      single: {
-        add: ({ id, ref, childRef }) => ({
-          $addToSet: {
-            [`${convertCase(childRef, "camel")}.${convertCase(ref, "camel")}List`]:
-              id,
-          },
-        }),
-        remove: ({ id, ref, childRef }) => ({
-          $pull: {
-            [`${convertCase(childRef, "camel")}.${convertCase(ref, "camel")}List`]:
-              id,
-          },
-        }),
-      },
-    },
+  if (!id || !role) {
+    return next(
+      new AppError(
+        "You cannot create or access some documents when logged out, or don't have the correct permissions. Try logging in first.",
+        401,
+      ),
+    );
+  }
 
-    notInArray: {
-      single: {
-        add: ({ id, ref, childRef }) => ({
-          $set: {
-            [`${convertCase(childRef, "camel")}.${convertCase(ref, "camel")}List`]:
-              id,
-          },
-        }),
-        remove: ({ ref, childRef }) => ({
-          [`${convertCase(childRef, "camel")}.${convertCase(ref, "camel")}List`]:
-            null,
-        }),
-      },
-    },
-  },
-
-  notEmbedded: {
-    inArray: {
-      multiple: {
-        add: ({ id, ref }) => ({
-          $addToSet: { [`${convertCase(ref, "camel")}List`]: id },
-        }),
-
-        remove: ({ id, ref }) => ({
-          $pull: { [`${convertCase(ref, "camel")}List`]: { $in: id } },
-        }),
-      },
-
-      single: {
-        add: ({ id, ref }) => ({
-          $addToSet: { [`${convertCase(ref, "camel")}List`]: id },
-        }),
-        remove: ({ id, ref }) => ({
-          $pull: { [`${convertCase(ref, "camel")}List`]: id },
-        }),
-      },
-    },
-
-    notInArray: {
-      single: {
-        add: ({ id, ref }) => ({
-          $set: { [`${convertCase(ref, "camel")}`]: id },
-        }),
-        remove: ({ ref }) => ({
-          [`${convertCase(ref, "camel")}`]: null,
-        }),
-      },
-    },
-  },
+  return { id, role };
 };
 
-const queryMatrix = {
+const filterMatrix = {
   find: {
     admin: {
       private: () => ({}),
@@ -129,129 +68,64 @@ const queryMatrix = {
   },
 };
 
-const getCurrentUser = async (req, next, getRole = true) => {
-  const { _id: id } = req.currentUser;
-  let role = "ROLE NOT NEEDED";
+const sanitizeBody = (keysString, requestBody) => {
+  const keys = keysString.split(" ");
+  const sanitized = { ...requestBody };
 
-  if (getRole) {
-    ({ role } = await mongoose
-      .model("User")
-      .findById(id)
-      .select("-_id role")
-      .lean());
-  }
+  keys.forEach(key => {
+    if (Object.prototype.hasOwnProperty.call(sanitized, key)) {
+      delete sanitized[key];
+    }
+  });
 
-  if (!id || !role) {
-    return next(
-      new AppError(
-        "You cannot create or access some documents when logged out, or don't have the correct permissions. Try logging in first.",
-        401,
-      ),
-    );
-  }
-
-  req.body.createdBy = id;
-
-  return { id, role };
+  return sanitized;
 };
 
-const generateAllQuery = async (req, Model, next, action) => {
-  const { id, role } = await getCurrentUser(req, next);
+const getModelData = Model => {
+  const {
+    name,
+    invalidCreateKeys,
+    invalidUpdateKeys,
+    privacy,
+    deleteType,
+    overviewSel,
+    overviewPop,
+    fullSel,
+    fullPop,
+  } = Model.schema.staticSettings;
 
-  const { parent, privacy } = Model.schema.staticSettings;
-
-  const restriction = queryMatrix[action][role][privacy](id);
-
-  let query = { ...restriction };
-
-  if (parent !== "none") {
-    const parentKey =
-      parent === "user" ? "createdBy" : convertCase(parent, "camel");
-
-    const parentId =
-      parent === "user" ? id : req.params[`${convertCase(parent, "camel")}Id`];
-
-    query = {
-      ...restriction,
-      [parentKey]: parentId,
-    };
-  }
-
-  return query;
-};
-
-const generateOneQuery = async (req, Model, next, action) => {
-  const { id, role } = await getCurrentUser(req, next);
-
-  const { name, parent, privacy, embedded } = Model.schema.staticSettings;
-
-  const restriction = queryMatrix[action][role][privacy](id);
-
-  let query = {
-    ...restriction,
-    _id: req.params[`${convertCase(name, "camel")}Id`],
+  return {
+    name,
+    invalidCreateKeys,
+    invalidUpdateKeys,
+    privacy,
+    deleteType,
+    overviewSel,
+    overviewPop,
+    fullSel,
+    fullPop,
   };
-
-  if (parent !== "none" && !embedded) {
-    const parentKey =
-      parent === "user" ? "createdBy" : convertCase(parent, "camel");
-
-    const parentId =
-      parent === "user" ? id : req.params[`${convertCase(parent, "camel")}Id`];
-
-    query = {
-      ...restriction,
-      [parentKey]: parentId,
-      _id: req.params[`${convertCase(name, "camel")}Id`],
-    };
-  }
-
-  if (embedded) {
-    query = {
-      ...restriction,
-      _id: req.params[`${convertCase(parent, "camel")}Id`],
-    };
-  }
-
-  return query;
-};
-
-const generateBody = async (req, Model, next) => {
-  let body;
-  const { id } = await getCurrentUser(req, next, false);
-  req.body.createdBy = id;
-
-  const { parent } = Model.schema.staticSettings;
-
-  if (parent === "none") {
-    body = { ...req.body };
-  }
-
-  if (parent !== "none") {
-    const userParent = { ...req.body };
-    const otherParent = {
-      ...req.body,
-      [convertCase(parent, "camel")]:
-        req.params[`${convertCase(parent, "camel")}Id`],
-    };
-
-    body = parent === "user" ? userParent : otherParent;
-  }
-
-  return body;
 };
 
 export const createOne = Model =>
   catchAsyncErrors(async (req, res, next) => {
-    const body = await generateBody(req, Model, next);
+    const { id } = await getCurrentUser(req, next);
+    const { name, invalidCreateKeys, fullSel, fullPop } = getModelData(Model);
+    const body = sanitizeBody(invalidCreateKeys, req.body);
 
-    const { fullSel, fullPop } = Model.schema.staticSettings;
+    const createdDoc = await Model.create({ ...body, createdBy: id });
 
-    const newDocUnpop = await Model.create(body);
+    const newDoc = await Model.findById(createdDoc._id)
+      .select(fullSel)
+      .populate(fullPop);
 
-    const newDoc = await Model.findById(newDocUnpop._id)
-      .populate(fullPop)
-      .select(fullSel);
+    if (!newDoc) {
+      return next(
+        new AppError(
+          `Something went wrong creating your new ${convertCase(name, "title")}`,
+        ),
+      );
+    }
 
     res.status(201).json({
       status: "success",
@@ -263,13 +137,18 @@ export const createOne = Model =>
 
 export const getAll = Model =>
   catchAsyncErrors(async (req, res, next) => {
-    const query = await generateAllQuery(req, Model, next, "find");
+    const { role, id } = await getCurrentUser(req, next, true);
+    const { privacy, overviewSel, overviewPop } = getModelData(Model);
 
-    const { overviewSel, overviewPop } = Model.schema.staticSettings;
+    const filter = filterMatrix.find[role][privacy](id);
 
-    const docs = await Model.find(query)
-      .populate(overviewPop)
-      .select(overviewSel);
+    const features = new APIFeatures(Model.find(filter), req.query)
+      .filter()
+      .sort()
+      .limitFields()
+      .paginate();
+
+    const docs = await features.query.populate(overviewPop).select(overviewSel);
 
     res.status(200).json({
       status: "success",
@@ -282,41 +161,21 @@ export const getAll = Model =>
 
 export const getOne = Model =>
   catchAsyncErrors(async (req, res, next) => {
-    const query = await generateOneQuery(req, Model, next, "find");
+    const { role, id } = await getCurrentUser(req, next, true);
+    const { name, privacy, fullSel, fullPop } = getModelData(Model);
 
-    const { fullSel, fullPop } = Model.schema.staticSettings;
+    const docId = req.params[`${convertCase(name, "camel")}Id`];
 
-    const doc = await Model.findOne(query).populate(fullPop).select(fullSel);
+    const filter = filterMatrix.find[role][privacy](id);
 
-    if (!doc) {
-      return next(
-        new AppError("No document was found with that query. Apologies.", 404),
-      );
-    }
-
-    res.status(200).json({
-      status: "success",
-      data: {
-        doc,
-      },
-    });
-  });
-
-export const getOneEmbedded = Model =>
-  catchAsyncErrors(async (req, res, next) => {
-    const { name, parent } = Model.schema.staticSettings;
-
-    const parentDoc = await mongoose
-      .model(convertCase(parent, "pascal"))
-      .findById(req.params[`${convertCase(parent, "camel")}Id`]);
-
-    const doc = parentDoc[convertCase(name, "camel")];
+    const doc = await Model.findOne({ ...filter, _id: docId })
+      .select(fullSel)
+      .populate(fullPop);
 
     if (!doc) {
       return next(
         new AppError(
-          "No embedded document was found with that query. Apologies.",
-          404,
+          `Couldn't find any ${convertCase(name, "title")} with that ID: ${docId}`,
         ),
       );
     }
@@ -331,17 +190,30 @@ export const getOneEmbedded = Model =>
 
 export const updateOne = Model =>
   catchAsyncErrors(async (req, res, next) => {
-    const query = await generateOneQuery(req, Model, next, "update");
+    const { role, id } = await getCurrentUser(req, next, true);
+    const { name, privacy, invalidUpdateKeys, fullSel, fullPop } =
+      getModelData(Model);
+    const body = sanitizeBody(invalidUpdateKeys, req.body);
 
-    const updatedDoc = await Model.findOneAndUpdate(query, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    const docId = req.params[`${convertCase(name, "camel")}Id`];
+
+    const filter = filterMatrix.update[role][privacy](id);
+
+    const updatedDoc = await Model.findOneAndUpdate(
+      { ...filter, _id: docId },
+      body,
+      {
+        new: true,
+        runValidators: true,
+      },
+    )
+      .populate(fullPop)
+      .select(fullSel);
 
     if (!updatedDoc) {
       return next(
         new AppError(
-          "No document was found with that query, so we couldn't do the update. Apologies.",
+          `Something went wrong updating this ${convertCase(name, "title")}, please start by checking the ID: ${docId}`,
           404,
         ),
       );
@@ -357,9 +229,14 @@ export const updateOne = Model =>
 
 export const deleteOne = Model =>
   catchAsyncErrors(async (req, res, next) => {
-    const query = await generateOneQuery(req, Model, next, "delete");
+    const { role, id } = await getCurrentUser(req, next, true);
+    const { name, privacy, deleteType } = getModelData(Model);
 
-    const { deleteType } = Model.schema.staticSettings;
+    const filter = filterMatrix.delete[role][privacy](id);
+
+    const docId = req.params[`${convertCase(name, "camel")}Id`];
+
+    const query = { ...filter, _id: docId };
 
     let deletedDoc;
     if (deleteType === "soft") {
@@ -377,7 +254,7 @@ export const deleteOne = Model =>
     if (!deletedDoc) {
       return next(
         new AppError(
-          "No document was found with that query, so we couldn't delete it. Apologies.",
+          `Something went wrong deleting this ${convertCase(name, "title")}, please start by checking the ID: ${docId}`,
           404,
         ),
       );
@@ -391,18 +268,31 @@ export const deleteOne = Model =>
 
 export const deleteAll = Model =>
   catchAsyncErrors(async (req, res, next) => {
-    const query = await generateAllQuery(req, Model, next, "delete");
+    const { role, id } = await getCurrentUser(req, next, true);
+    const { privacy, deleteType } = getModelData(Model);
 
-    const { deleteType } = Model.schema.staticSettings;
-
+    const filter = filterMatrix.delete[role][privacy](id);
     let deleteCount;
+
     if (deleteType === "soft") {
-      const deactivatedDocs = await Model.updateMany(query, { active: false });
+      const featuresUpdate = new APIFeatures(
+        Model.updateMany(filter, { active: false }),
+        req.query,
+        "updateMany",
+      ).filter();
+
+      const deactivatedDocs = await featuresUpdate.query;
       deleteCount = deactivatedDocs.modifiedCount;
     }
 
     if (deleteType === "hard") {
-      deleteCount = await Model.deleteMany(query);
+      const featuresDelete = new APIFeatures(
+        Model.deleteMany(filter),
+        req.query,
+        "deleteMany",
+      ).filter();
+
+      deleteCount = await featuresDelete.query;
     }
 
     res.status(200).json({
@@ -411,110 +301,4 @@ export const deleteAll = Model =>
     });
   });
 
-export const updateReference = Model =>
-  catchAsyncErrors(async (req, res, next) => {
-    const {
-      name,
-      parent,
-      updateableRefs,
-      fullSel,
-      fullPop,
-      embedded = false,
-    } = Model.schema.staticSettings;
-
-    const { action, ref, array, id } = req.body;
-
-    const childRef = embedded ? name : "UNUSED";
-    const isEmbedded = embedded ? "embedded" : "notEmbedded";
-    const multiple = Array.isArray(id) ? "multiple" : "single";
-    const inArray = array ? "inArray" : "notInArray";
-
-    if (!updateableRefs || !updateableRefs.includes(ref)) {
-      return next(
-        new AppError(
-          updateableRefs
-            ? `Cannot perform this action because you cannot update the "${ref}" on this document. You can update ${updateableRefs.join(" OR ")}`
-            : `Updateable refs were not provieded for ${name}. Please address.`,
-          400,
-        ),
-      );
-    }
-
-    if (!action || !["add", "remove"].includes(action)) {
-      return next(
-        new AppError(
-          `Cannot perform this action without a valid action, your options are "action": "add" OR "action": "remove"`,
-          400,
-        ),
-      );
-    }
-
-    if (!ref) {
-      return next(
-        new AppError(
-          `Cannot perform this action without a valid ref, your options are `,
-          400,
-        ),
-      );
-    }
-
-    if (array === undefined) {
-      return next(
-        new AppError(
-          `Cannot perform this action without a valid "array" property, your options are true, or false and you're telling us if this property is STORED as an array in the document.`,
-          400,
-        ),
-      );
-    }
-
-    const query = await generateOneQuery(req, Model, next, "update");
-
-    const update = updateRefMatrix[isEmbedded][inArray][multiple][action]({
-      id,
-      ref,
-      childRef,
-    });
-
-    let updatedDoc;
-    if (embedded) {
-      updatedDoc = await mongoose
-        .model(convertCase(parent, "pascal"))
-        .findOneAndUpdate(query, update, {
-          new: true,
-          runValidators: true,
-        })
-        .populate(fullPop)
-        .select(fullSel);
-    }
-
-    if (!embedded) {
-      updatedDoc = await Model.findOneAndUpdate(query, update, {
-        new: true,
-        runValidators: true,
-      })
-        .populate(fullPop)
-        .select(fullSel);
-    }
-
-    if (!updatedDoc) {
-      return next(
-        new AppError(
-          `No document was found with that query, so we couldn't do the update. Apologies.`,
-          404,
-        ),
-      );
-    }
-
-    res.status(200).json({
-      status: "success",
-      data: {
-        updatedDoc,
-      },
-    });
-  });
-
-export const cleanupCollection = async Model => {
-  const deletedCount = await Model.deleteMany({ active: false });
-  // eslint-disable-next-line no-console
-  console.log(deletedCount);
-};
+export const updateReference = () => "DEPRECATED";

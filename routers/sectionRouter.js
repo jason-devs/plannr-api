@@ -1,7 +1,10 @@
 import express from "express";
 import * as sectionController from "../controllers/sectionController.js";
+import * as authController from "../controllers/authController.js";
 
-const router = express.Router({ mergeParams: true });
+const router = express.Router();
+
+router.use(authController.userProtect);
 
 router
   .route("/")
@@ -14,8 +17,6 @@ router
   .get(sectionController.getSection)
   .patch(sectionController.updateSection)
   .delete(sectionController.deleteSection);
-
-router.route("/:sectionId/refs").patch(sectionController.updateRefs);
 
 export default router;
 

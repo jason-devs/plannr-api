@@ -1,7 +1,10 @@
 import express from "express";
 import * as componentController from "../controllers/componentController.js";
+import * as authController from "../controllers/authController.js";
 
-const router = express.Router({ mergeParams: true });
+const router = express.Router();
+
+router.use(authController.userProtect);
 
 router
   .route("/")
@@ -14,8 +17,6 @@ router
   .get(componentController.getComponent)
   .patch(componentController.updateComponent)
   .delete(componentController.deleteComponent);
-
-router.route("/:componentId/refs").patch(componentController.updateRefs);
 
 export default router;
 

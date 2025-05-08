@@ -1,32 +1,15 @@
 import mongoose from "mongoose";
 import slugify from "slugify";
-import * as relationships from "./relationships.js";
 import * as factory from "./validatorFactory.js";
-import frontendSchema from "./frontendSchema.js";
-import backendSchema from "./backendSchema.js";
+import Settings from "./Settings.js";
 
-const settings = {
-  name: "project",
-  parent: "user",
-  privacy: "private",
-  children: ["backend resource", "page", "user story"],
-  updateableRefs: ["tech"],
-  deleteType: "hard",
-  overviewSel: "name",
-  overviewPop: [],
-  fullSel: "-__v -createdAt -createdBy -slug",
-  fullPop: [],
-};
+const settings = new Settings({ name: "project" });
 
 const projectSchema = new mongoose.Schema(
   {
     name: factory.validText(settings, "title", true, ` `),
 
     description: factory.validText(settings, "large", false),
-
-    frontend: frontendSchema,
-
-    backend: backendSchema,
 
     slug: factory.validSlug(settings.name),
 
@@ -45,23 +28,9 @@ const projectSchema = new mongoose.Schema(
 projectSchema.staticSettings = settings;
 
 projectSchema.pre("save", function (next) {
-  if (!this.frontend) this.frontend = {};
-  if (!this.backend) this.backend = {};
-  this.slug = slugify(this.name, { lower: true });
+  this.createdAt = new Date();
+  this.slug = `PRO-${slugify(this.name, { lower: true })}-${this._id.toString().slice(-5)}`;
   next();
-});
-
-projectSchema.post("save", async function (project) {
-  await relationships.afterAddOne(project);
-});
-
-projectSchema.post("deleteMany", async function () {
-  await relationships.afterDeleteMany(this);
-});
-
-projectSchema.post("findOneAndDelete", async function (project) {
-  await relationships.afterDeleteOne(project);
-  await relationships.deleteMultipleChildren(project);
 });
 
 export default projectSchema;

@@ -12,5 +12,3 @@ export const updateProject = factory.updateOne(models.Project);
 export const deleteProject = factory.deleteOne(models.Project);
 
 export const deleteProjects = factory.deleteAll(models.Project);
-
-export const updateTech = factory.updateReference(models.Project, "tech");

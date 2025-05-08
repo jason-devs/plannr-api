@@ -11,11 +11,17 @@ import authRouter from "./routers/authRouter.js";
 import userRouter from "./routers/userRouter.js";
 import projectRouter from "./routers/projectRouter.js";
 import pageRouter from "./routers/pageRouter.js";
+import userStoryRouter from "./routers/userStoryRouter.js";
 import backendResourceRouter from "./routers/backendResourceRouter.js";
+import sectionRouter from "./routers/sectionRouter.js";
 import roleRouter from "./routers/roleRouter.js";
 import techRouter from "./routers/techRouter.js";
 import componentRouter from "./routers/componentRouter.js";
 import dataModelRouter from "./routers/dataModelRouter.js";
+import pageComponentRouter from "./routers/pageComponentRouter.js";
+import frontendResourceRouter from "./routers/frontendResourceRouter.js";
+import frontendStackRouter from "./routers/frontendStackRouter.js";
+import componentSectionRouter from "./routers/componentSectionRouter.js";
 import globalErrorHandler from "./controllers/errorController.js";
 import AppError from "./utils/appError.js";
 
@@ -51,12 +57,18 @@ app.use(`/api/v1/user`, userRouter);
 app.use(`/api/v1/project`, projectRouter);
 app.use(`/api/v1/role`, roleRouter);
 app.use(`/api/v1/tech`, techRouter);
+app.use(`/api/v1/page`, pageRouter);
+app.use(`/api/v1/user-story`, userStoryRouter);
+app.use(`/api/v1/component`, componentRouter);
+app.use(`/api/v1/data-model`, dataModelRouter);
+app.use(`/api/v1/backend-resource`, backendResourceRouter);
+app.use(`/api/v1/section`, sectionRouter);
+app.use(`/api/v1/frontend-resource`, frontendResourceRouter);
+app.use(`/api/v1/frontend-stack`, frontendStackRouter);
 
-//NOTE: Nested in /project:
-projectRouter.use("/:projectId/page", pageRouter);
-projectRouter.use("/:projectId/component", componentRouter);
-projectRouter.use("/:projectId/backend-resource", backendResourceRouter);
-projectRouter.use("/:projectId/data-model", dataModelRouter);
+//NOTE: Join routes:
+app.use(`/api/v1/page-component`, pageComponentRouter);
+app.use(`/api/v1/component-section`, componentSectionRouter);
 
 app.all("*", (req, res, next) => {
   const error = new AppError(
