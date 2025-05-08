@@ -1,12 +1,10 @@
 import express from "express";
 import * as pageController from "../controllers/pageController.js";
-import userStoryRouter from "./userStoryRouter.js";
-import sectionRouter from "./sectionRouter.js";
+import * as authController from "../controllers/authController.js";
 
-const router = express.Router({ mergeParams: true });
+const router = express.Router();
 
-router.use("/:pageId/user-story", userStoryRouter);
-router.use("/:pageId/section", sectionRouter);
+router.use(authController.userProtect);
 
 router
   .route("/")

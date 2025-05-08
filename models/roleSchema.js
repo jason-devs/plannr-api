@@ -1,22 +1,20 @@
 import mongoose from "mongoose";
 import slugify from "slugify";
 import * as factory from "./validatorFactory.js";
+import Settings from "./Settings.js";
 
-const settings = {
+const settings = new Settings({
   name: "role",
-  parent: "none",
   privacy: "custom",
   deleteType: "soft",
-  overviewSel: "name",
-  overviewPop: [],
-  fullSel: "-__v -createdAt -createdBy",
-  fullPop: [],
-};
+});
 
 const roleSchema = mongoose.Schema({
   name: factory.validText(settings, "title", true, ` `),
 
   description: factory.validText(settings, "small", true),
+
+  //NOTE: Operational:
 
   custom: {
     type: Boolean,

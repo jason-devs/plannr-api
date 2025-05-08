@@ -1,7 +1,10 @@
 import express from "express";
 import * as userStoriesController from "../controllers/userStoriesController.js";
+import * as authController from "../controllers/authController.js";
 
-const router = express.Router({ mergeParams: true });
+const router = express.Router();
+
+router.use(authController.userProtect);
 
 router
   .route("/")
@@ -14,7 +17,5 @@ router
   .get(userStoriesController.getUserStory)
   .patch(userStoriesController.updateUserStory)
   .delete(userStoriesController.deleteUserStory);
-
-router.route("/:userStoryId/refs").patch(userStoriesController.updateRefs);
 
 export default router;

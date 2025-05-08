@@ -3,42 +3,40 @@ import * as factory from "./validatorFactory.js";
 import Settings from "./Settings.js";
 
 export const settings = new Settings({
-  name: "component",
+  name: "frontend stack",
 });
 
-const componentSchema = mongoose.Schema({
+const frontendStackSchema = mongoose.Schema({
   name: factory.validText(settings, "title", true, ` `, true),
 
   //NOTE: References:
 
-  project: factory.validReference(settings.name, "project"),
-
-  //NOTE: Operational:
+  project: factory.validReference(settings.name, "project", true, false, false),
 
   createdBy: factory.validReference(settings.name, "user"),
+
+  //NOTE: Operational:
 
   createdAt: {
     type: Date,
   },
 });
 
-componentSchema.staticSettings = settings;
+frontendStackSchema.staticSettings = settings;
 
-componentSchema.pre("save", async function (next) {
+frontendStackSchema.pre("save", async function (next) {
   this.createdAt = new Date();
   next();
 });
 
-export default componentSchema;
+export default frontendStackSchema;
 
 /*
 
 NOTE: Add the following to modelRegistry.js:
 
-  import componentSchema from "./componentSchema.js"
+  import frontendStackSchema from "./frontendStackSchema.js"
   
-  Component: mongoose.model("Component", roleSchema),
-
-NOTE: And don't forget to add me to any DELETE logic in projectSchema.js
+  FrontendStack: mongoose.model("FrontendStack", frontendStackSchema),
 
 */

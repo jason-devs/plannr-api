@@ -1,15 +1,10 @@
 import mongoose from "mongoose";
-import slugify from "slugify";
-import * as relationships from "./relationships.js";
 import * as factory from "./validatorFactory.js";
+import Settings from "./Settings.js";
 
-const settings = {
+const settings = new Settings({
   name: "page",
-  parent: "project",
-  subDoc: "frontend",
-  privacy: "private",
-  deleteType: "hard",
-  overviewSel: "name",
+  invalidUpdateKeys: "project",
   overviewPop: [
     {
       path: "userStoryList",
@@ -24,7 +19,7 @@ const settings = {
       populate: "role",
     },
   ],
-};
+});
 
 const pageSchema = mongoose.Schema({
   name: factory.validText(settings, "title", true, ` `),
@@ -53,6 +48,8 @@ const pageSchema = mongoose.Schema({
   apiEndpoints: {
     type: [String],
   },
+
+  //NOTE: References:
 
   navVisible: {
     type: Boolean,
@@ -83,7 +80,9 @@ const pageSchema = mongoose.Schema({
     true,
   ),
 
-  project: factory.validReference(settings.name, settings.parent),
+  project: factory.validReference(settings.name, "project"),
+
+  //NOTE: Operational:
 
   createdBy: factory.validReference(settings.name, "user"),
 
@@ -101,21 +100,8 @@ pageSchema.virtual("roles").get(function () {
 });
 
 pageSchema.pre("save", async function (next) {
-  this.slug = slugify(this.name, { lower: true });
   this.createdAt = new Date();
   next();
-});
-
-pageSchema.post("findOneAndDelete", async function (page) {
-  await relationships.afterDeleteOne(page);
-});
-
-pageSchema.post("deleteMany", async function () {
-  await relationships.afterDeleteMany(this);
-});
-
-pageSchema.post("save", async function (page) {
-  await relationships.afterAddOne(page);
 });
 
 export default pageSchema;

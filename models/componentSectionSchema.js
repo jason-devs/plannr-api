@@ -3,10 +3,10 @@ import * as factory from "./validatorFactory.js";
 import Settings from "./Settings.js";
 
 export const settings = new Settings({
-  name: "%%NAME%%",
+  name: "component section",
 });
 
-const %%VARIABLENAME%%Schema = mongoose.Schema({
+const componentSectionSchema = mongoose.Schema({
   name: factory.validText(settings, "title", true, ` `, true),
 
   createdBy: factory.validReference(settings.name, "user"),
@@ -16,21 +16,21 @@ const %%VARIABLENAME%%Schema = mongoose.Schema({
   },
 });
 
-%%VARIABLENAME%%Schema.staticSettings = settings;
+componentSectionSchema.staticSettings = settings;
 
-%%VARIABLENAME%%Schema.pre("save", async function (next) {
+componentSectionSchema.pre("save", async function (next) {
   this.createdAt = new Date();
   next();
 });
 
-export default %%VARIABLENAME%%Schema;
+export default componentSectionSchema;
 
 /*
 
 NOTE: Add the following to modelRegistry.js:
 
-  import %%VARIABLENAME%%Schema from "./%%VARIABLENAME%%Schema.js"
+  import componentSectionSchema from "./componentSectionSchema.js"
   
-  %%MODELNAME%%: mongoose.model("%%MODELNAME%%", %%VARIABLENAME%%Schema),
+  ComponentSection: mongoose.model("ComponentSection", componentSectionSchema),
 
 */

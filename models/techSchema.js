@@ -2,17 +2,17 @@ import mongoose from "mongoose";
 import slugify from "slugify";
 import * as factory from "./validatorFactory.js";
 import { VALIDTECHFIELDS } from "../utils/config.js";
+import Settings from "./Settings.js";
 
-const settings = {
+const settings = new Settings({
   name: "tech",
-  parent: "none",
   privacy: "custom",
   deleteType: "soft",
   overviewSel: "name field icon",
   overviewPop: [],
   fullSel: "-__v -createdAt -createdBy",
   fullPop: [],
-};
+});
 
 const techSchema = mongoose.Schema({
   name: factory.validText(settings, "title", true, ` ./`, true),
@@ -32,11 +32,6 @@ const techSchema = mongoose.Schema({
   icon: {
     type: String,
   },
-
-  // commonTechStackList: {
-  //   type: [mongoose.Schema.ObjectId],
-  //   ref: "CommonTechStack",
-  // },
 
   openSource: {
     type: Boolean,
@@ -89,6 +84,8 @@ const techSchema = mongoose.Schema({
     "Intermediate",
     "Advanced",
   ]),
+
+  //NOTE: Operational:
 
   createdBy: factory.validReference(settings.name, "user"),
 

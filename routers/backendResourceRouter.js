@@ -1,7 +1,7 @@
 import express from "express";
 import * as backendResourceController from "../controllers/backendResourceController.js";
 
-const router = express.Router({ mergeParams: true });
+const router = express.Router();
 
 router
   .route("/")

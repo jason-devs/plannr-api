@@ -8,10 +8,12 @@ import techSchema from "./techSchema.js";
 import apiKeySchema from "./apiKeySchema.js";
 import pageSchema from "./pageSchema.js";
 import componentSchema from "./componentSchema.js";
-import backendSchema from "./backendSchema.js";
-import frontendSchema from "./frontendSchema.js";
 import dataModelSchema from "./dataModelSchema.js";
 import sectionSchema from "./sectionSchema.js";
+import pageComponentSchema from "./pageComponentSchema.js";
+import frontendResourceSchema from "./frontendResourceSchema.js";
+import frontendStackSchema from "./frontendStackSchema.js";
+import componentSectionSchema from "./componentSectionSchema.js";
 
 const models = {
   User: mongoose.model("User", userSchema),
@@ -23,10 +25,12 @@ const models = {
   Page: mongoose.model("Page", pageSchema),
   ApiKey: mongoose.model("ApiKey", apiKeySchema),
   Component: mongoose.model("Component", componentSchema),
-  Frontend: mongoose.model("Frontend", frontendSchema),
-  Backend: mongoose.model("Backend", backendSchema),
   DataModel: mongoose.model("DataModel", dataModelSchema),
   Section: mongoose.model("Section", sectionSchema),
+  PageComponent: mongoose.model("PageComponent", pageComponentSchema),
+  FrontendResource: mongoose.model("FrontendResource", frontendResourceSchema),
+  FrontendStack: mongoose.model("FrontendStack", frontendStackSchema),
+  ComponentSection: mongoose.model("ComponentSection", componentSectionSchema),
 };
 
 export default models;
