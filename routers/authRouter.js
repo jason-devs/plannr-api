@@ -11,5 +11,6 @@ router.route("/login").post(authController.login);
 router.use(authController.userProtect);
 router.route("/logout").get(authController.logout);
 router.route("/update-password").patch(authController.updatePassword);
+router.route("/verify").get(authController.verify);
 
 export default router;

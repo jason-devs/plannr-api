@@ -36,9 +36,9 @@ const sendJWT = (user, token, res) => {
     expires: new Date(Date.now() + JWT_COOKIE_EXPIRY * 24 * 60 * 60 * 1000),
     httpOnly: true,
     secure: NODE_ENV === "production",
+    sameSite: NODE_ENV === "production" ? "strict" : "lax",
+    domain: NODE_ENV === "development" ? "localhost" : process.env.DOMAIN,
   };
-
-  if (NODE_ENV === "production") cookieOptions.secure = true;
 
   res.cookie("jwt", token, cookieOptions);
 
@@ -50,6 +50,52 @@ const sendJWT = (user, token, res) => {
     },
   });
 };
+
+export const verify = catchAsyncErrors(async (req, res, next) => {
+  let token;
+  const { NODE_ENV } = process.env;
+  const { authorization } = req.headers;
+  const { JWT_SECRET } = process.env;
+  if (authorization && authorization.startsWith("Bearer")) {
+    token = authorization.split(" ")[1];
+  } else if (req.cookies.jwt) {
+    token = req.cookies.jwt;
+  }
+
+  if (token === "null" && NODE_ENV === "development") {
+    token = "";
+  }
+
+  if (!token) {
+    return next(new AppError("Login invalid.", 401));
+  }
+
+  const decoded = await promisify(jwt.verify)(token, JWT_SECRET);
+  const { id, iat } = decoded;
+  const user = await models.User.findById(id);
+
+  if (!user) {
+    return next(
+      new AppError(`The user assigned to this login no longer exists.`, 401),
+    );
+  }
+
+  const passwordChanged = user.changedPasswordAfter(iat);
+
+  if (passwordChanged) {
+    return next(
+      new AppError(
+        `The user assigned to this login has changed their password.`,
+        401,
+      ),
+    );
+  }
+
+  res.status(200).json({
+    status: "success",
+    currentUser: { name: user.name, projectList: user.projectList },
+  });
+});
 
 export const login = catchAsyncErrors(async (req, res, next) => {
   const { email, password } = req.body;
