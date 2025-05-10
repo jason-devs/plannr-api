@@ -6,6 +6,7 @@ import mongoSanitize from "express-mongo-sanitize";
 import xss from "xss-clean";
 import hpp from "hpp";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 
 import authRouter from "./routers/authRouter.js";
 import userRouter from "./routers/userRouter.js";
@@ -32,6 +33,18 @@ const limiter = rateLimit({
   message:
     "Too many requests from this IP address. Please try again in an hour.",
 });
+
+app.use(
+  cors({
+    origin:
+      process.env.NODE_ENV === "development"
+        ? "http://localhost:5173" // Your Vite frontend
+        : process.env.FRONTEND_URL,
+    credentials: true, // Allow credentials (cookies)
+    methods: ["GET", "POST", "PATCH", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
 
 app.use(
   helmet({
