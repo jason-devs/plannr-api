@@ -27,7 +27,12 @@ const projectSchema = new mongoose.Schema(
 
 projectSchema.staticSettings = settings;
 
-projectSchema.pre("save", function (next) {
+projectSchema.pre("save", async function (next) {
+  await Promise.all(
+    ["FrontendStack", "BackendStack"].map(model =>
+      mongoose.model(model).create({ project: this._id }),
+    ),
+  );
   this.createdAt = new Date();
   this.slug = `PRO-${slugify(this.name, { lower: true })}-${this._id.toString().slice(-5)}`;
   next();
