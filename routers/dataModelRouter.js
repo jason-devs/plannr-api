@@ -1,7 +1,10 @@
 import express from "express";
 import * as dataModelController from "../controllers/dataModelController.js";
+import * as authController from "../controllers/authController.js";
 
 const router = express.Router({ mergeParams: true });
+
+router.use(authController.userProtect);
 
 router
   .route("/")
