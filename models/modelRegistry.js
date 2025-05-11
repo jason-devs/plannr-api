@@ -13,6 +13,7 @@ import sectionSchema from "./sectionSchema.js";
 import pageComponentSchema from "./pageComponentSchema.js";
 import frontendResourceSchema from "./frontendResourceSchema.js";
 import frontendStackSchema from "./frontendStackSchema.js";
+import backendStackSchema from "./backendStackSchema.js";
 import componentSectionSchema from "./componentSectionSchema.js";
 
 const models = {
@@ -31,6 +32,7 @@ const models = {
   FrontendResource: mongoose.model("FrontendResource", frontendResourceSchema),
   FrontendStack: mongoose.model("FrontendStack", frontendStackSchema),
   ComponentSection: mongoose.model("ComponentSection", componentSectionSchema),
+  BackendStack: mongoose.model("BackendStack", backendStackSchema),
 };
 
 export default models;

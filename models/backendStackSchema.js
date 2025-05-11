@@ -3,7 +3,7 @@ import * as factory from "./validatorFactory.js";
 import Settings from "./Settings.js";
 
 export const settings = new Settings({
-  name: "frontend stack",
+  name: "backend stack",
   overviewSel: "techList",
   overviewPop: [
     {
@@ -13,7 +13,7 @@ export const settings = new Settings({
   ],
 });
 
-const frontendStackSchema = mongoose.Schema({
+const backendStackSchema = mongoose.Schema({
   //NOTE: References:
 
   techList: factory.validReference(settings.name, "tech", false, true, true),
@@ -29,21 +29,21 @@ const frontendStackSchema = mongoose.Schema({
   },
 });
 
-frontendStackSchema.staticSettings = settings;
+backendStackSchema.staticSettings = settings;
 
-frontendStackSchema.pre("save", async function (next) {
+backendStackSchema.pre("save", async function (next) {
   this.createdAt = new Date();
   next();
 });
 
-export default frontendStackSchema;
+export default backendStackSchema;
 
 /*
 
 NOTE: Add the following to modelRegistry.js:
 
-  import frontendStackSchema from "./frontendStackSchema.js"
+  import backendStackSchema from "./backendStackSchema.js"
   
-  FrontendStack: mongoose.model("FrontendStack", frontendStackSchema),
+  BackendStack: mongoose.model("BackendStack", backendStackSchema),
 
 */
