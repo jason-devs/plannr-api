@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import * as factory from "./validatorFactory.js";
+// import * as factory from "./validatorFactory.js";
 import Settings from "./Settings.js";
 
 export const settings = new Settings({
@@ -11,12 +11,20 @@ export const settings = new Settings({
       select: "name",
     },
   ],
+  fullSel: "techList",
+  fullPop: {
+    path: "techList",
+    select: "name",
+  },
 });
 
 const frontendStackSchema = mongoose.Schema({
   //NOTE: References:
 
-  techList: factory.validReference(settings.name, "tech", false, true, true),
+  techList: {
+    type: [mongoose.Schema.ObjectId],
+    ref: "Tech",
+  },
 
   project: {
     type: mongoose.Schema.ObjectId,
