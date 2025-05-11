@@ -1,7 +1,10 @@
 import express from "express";
 import * as frontendStackController from "../controllers/frontendStackController.js";
+import * as authController from "../controllers/authController.js";
 
 const router = express.Router();
+
+router.use(authController.userProtect);
 
 router
   .route("/")

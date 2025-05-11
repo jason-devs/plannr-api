@@ -22,6 +22,7 @@ import dataModelRouter from "./routers/dataModelRouter.js";
 import pageComponentRouter from "./routers/pageComponentRouter.js";
 import frontendResourceRouter from "./routers/frontendResourceRouter.js";
 import frontendStackRouter from "./routers/frontendStackRouter.js";
+import backendStackRouter from "./routers/backendStackRouter.js";
 import componentSectionRouter from "./routers/componentSectionRouter.js";
 import globalErrorHandler from "./controllers/errorController.js";
 import AppError from "./utils/appError.js";
@@ -78,6 +79,7 @@ app.use(`/api/v1/backend-resource`, backendResourceRouter);
 app.use(`/api/v1/section`, sectionRouter);
 app.use(`/api/v1/frontend-resource`, frontendResourceRouter);
 app.use(`/api/v1/frontend-stack`, frontendStackRouter);
+app.use(`/api/v1/backend-stack`, backendStackRouter);
 
 //NOTE: Join routes:
 app.use(`/api/v1/page-component`, pageComponentRouter);
