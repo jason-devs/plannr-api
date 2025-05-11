@@ -29,7 +29,7 @@ import AppError from "./utils/appError.js";
 
 const app = express();
 const limiter = rateLimit({
-  max: 100,
+  max: 100000,
   windowMs: 60 * 60 * 1000,
   message:
     "Too many requests from this IP address. Please try again in an hour.",
@@ -37,10 +37,7 @@ const limiter = rateLimit({
 
 app.use(
   cors({
-    origin:
-      process.env.NODE_ENV === "development"
-        ? "http://localhost:5173" // Your Vite frontend
-        : process.env.FRONTEND_URL,
+    origin: ["http://localhost:5173", "http://192.168.68.113:5173"],
     credentials: true, // Allow credentials (cookies)
     methods: ["GET", "POST", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
