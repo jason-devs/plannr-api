@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import minimist from "minimist";
 
 import app from "./app.js";
 
@@ -22,10 +23,11 @@ const connectDB = async () => {
 
 connectDB();
 
-const { PORT, HOST, LOCAL_HOST, NODE_ENV } = process.env;
+const { PORT } = process.env;
 
-const host = NODE_ENV === "production" ? HOST : LOCAL_HOST;
+const argv = minimist(process.argv.slice(2));
+const host = argv.host ? "0.0.0.0" : "localhost";
 
 app.listen(PORT, host, () => {
-  console.log(`Plannr server listening on port: ${PORT}`);
+  console.log(`Plannr server listening on http://${host}:${PORT}`);
 });

@@ -37,7 +37,6 @@ const sendJWT = (user, token, res) => {
     httpOnly: true,
     secure: NODE_ENV === "production",
     sameSite: NODE_ENV === "production" ? "strict" : "lax",
-    domain: NODE_ENV === "development" ? "localhost" : process.env.DOMAIN,
   };
 
   res.cookie("jwt", token, cookieOptions);
