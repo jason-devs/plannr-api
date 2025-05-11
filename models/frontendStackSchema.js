@@ -18,11 +18,12 @@ const frontendStackSchema = mongoose.Schema({
 
   techList: factory.validReference(settings.name, "tech", false, true, true),
 
-  project: factory.validReference(settings.name, "project", true, false, false),
+  project: {
+    type: mongoose.Schema.ObjectId,
+    ref: "Project",
+  },
 
   //NOTE: Operational:
-
-  createdBy: factory.validReference(settings.name, "user"),
 
   createdAt: {
     type: Date,
