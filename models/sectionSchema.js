@@ -4,6 +4,7 @@ import Settings from "./Settings.js";
 
 export const settings = new Settings({
   name: "section",
+  overviewSel: "name description",
 });
 
 const sectionSchema = mongoose.Schema({

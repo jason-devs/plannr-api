@@ -6,6 +6,17 @@ export const settings = new Settings({
   name: "page component",
   privacy: "private",
   deleteType: "hard",
+  overviewSel: "page component",
+  overviewPop: [
+    {
+      path: "page",
+      select: "name",
+    },
+    {
+      path: "component",
+      select: "name",
+    },
+  ],
 });
 
 const pageComponentSchema = mongoose.Schema({

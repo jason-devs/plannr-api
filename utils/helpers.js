@@ -1,3 +1,5 @@
+import os from "os";
+
 export const catchAsyncErrors = fn => (req, res, next) =>
   fn(req, res, next).catch(next);
 
@@ -43,4 +45,20 @@ export const convertCase = (input, targetCase) => {
     default:
       throw new Error("Unsupported case type");
   }
+};
+
+export const getIpv4Address = () => {
+  const interfaces = os.networkInterfaces();
+
+  return Object.keys(interfaces).reduce(
+    (acc, key) => {
+      if (!key.startsWith("en") && !key.startsWith("lo")) return acc;
+
+      acc.push(
+        interfaces[key].filter(entry => entry.family === "IPv4")[0].address,
+      );
+      return acc;
+    },
+    ["0.0.0.0"],
+  );
 };

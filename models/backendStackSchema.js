@@ -4,18 +4,13 @@ import Settings from "./Settings.js";
 
 export const settings = new Settings({
   name: "backend stack",
-  overviewSel: "techList",
+  overviewSel: "techList project",
   overviewPop: [
     {
       path: "techList",
       select: "name",
     },
   ],
-  fullSel: "techList",
-  fullPop: {
-    path: "techList",
-    select: "name",
-  },
 });
 
 const backendStackSchema = mongoose.Schema({

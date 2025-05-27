@@ -1,7 +1,10 @@
 import express from "express";
 import * as backendResourceController from "../controllers/backendResourceController.js";
+import * as authController from "../controllers/authController.js";
 
 const router = express.Router();
+
+router.use(authController.userProtect);
 
 router
   .route("/")

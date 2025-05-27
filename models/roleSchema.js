@@ -7,6 +7,7 @@ const settings = new Settings({
   name: "role",
   privacy: "custom",
   deleteType: "soft",
+  overviewSel: "name description",
 });
 
 const roleSchema = mongoose.Schema({
