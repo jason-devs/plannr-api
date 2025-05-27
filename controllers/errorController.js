@@ -22,6 +22,8 @@ const handleValidatorError = function (message) {
 const respondDev = (err, res) => {
   const { status = "error", statusCode = 500, message, stack } = err;
 
+  console.log(message);
+
   res.status(statusCode).json({
     status,
     message,

@@ -3,7 +3,10 @@ import slugify from "slugify";
 import * as factory from "./validatorFactory.js";
 import Settings from "./Settings.js";
 
-const settings = new Settings({ name: "project" });
+const settings = new Settings({
+  name: "project",
+  overviewSel: "name description",
+});
 
 const projectSchema = new mongoose.Schema(
   {

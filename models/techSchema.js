@@ -8,7 +8,7 @@ const settings = new Settings({
   name: "tech",
   privacy: "custom",
   deleteType: "soft",
-  overviewSel: "name field icon",
+  overviewSel: "-__v -createdAt -createdBy",
   overviewPop: [],
   fullSel: "-__v -createdAt -createdBy",
   fullPop: [],

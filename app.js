@@ -26,6 +26,7 @@ import backendStackRouter from "./routers/backendStackRouter.js";
 import componentSectionRouter from "./routers/componentSectionRouter.js";
 import globalErrorHandler from "./controllers/errorController.js";
 import AppError from "./utils/appError.js";
+import { getIpv4Address } from "./utils/helpers.js";
 
 const app = express();
 const limiter = rateLimit({
@@ -37,7 +38,7 @@ const limiter = rateLimit({
 
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://192.168.68.113:5173"],
+    origin: getIpv4Address().map(address => `http://${address}:5173`),
     credentials: true, // Allow credentials (cookies)
     methods: ["GET", "POST", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],

@@ -5,6 +5,7 @@ import Settings from "./Settings.js";
 const settings = new Settings({
   name: "page",
   invalidUpdateKeys: "project",
+  overviewSel: "name description userStoryList",
   overviewPop: [
     {
       path: "userStoryList",

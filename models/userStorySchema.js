@@ -5,7 +5,13 @@ import Settings from "./Settings.js";
 const settings = new Settings({
   name: "user story",
   privacy: "private",
-  overviewSel: "story",
+  overviewSel: "story fullStory",
+  overviewPop: [
+    {
+      path: "role",
+      select: "name description",
+    },
+  ],
 });
 
 const userStorySchema = mongoose.Schema(
@@ -42,8 +48,8 @@ const userStorySchema = mongoose.Schema(
 userStorySchema.staticSettings = settings;
 
 userStorySchema.virtual("fullStory").get(function () {
-  if (!this.role) return this.story.replace("((ROLE))", "-- --");
-  return `As ${this.role.name === "admin" ? "an" : "a"} ${this.role.name} ${this.story}`;
+  if (!this.role) return `As a -- -- I want to ${this.story}`;
+  return `As ${this.role.name?.toLowerCase() === "admin" ? "an" : "a"} ${this.role.name?.toLowerCase()} I want to ${this.story[0].toLowerCase() + this.story.slice(1)}`;
 });
 
 userStorySchema.pre("save", async function (next) {
